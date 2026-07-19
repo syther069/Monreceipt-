@@ -635,14 +635,14 @@ export function App() {
     try {
       if (demoMode) {
         // Demo Mode simulated tx flow
-        await new Promise((resolve) => setTimeout(resolve, 800)); // Sign wait
+        await new Promise((resolve) => setTimeout(resolve, 200)); // Snappy sign wait
         
         setRowStates((prev) => ({
           ...prev,
           [hash]: { ...prev[hash], status: 'pending', startTime: Date.now() }
         }));
         
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Confirmation wait
+        await new Promise((resolve) => setTimeout(resolve, 400)); // Snappy confirmation wait
         
         // Save to mock local storage
         const activeAddress = 'demo';
@@ -672,7 +672,7 @@ export function App() {
             next.delete(hash.toLowerCase());
             return next;
           });
-        }, 3000);
+        }, 1000);
 
         setRowStates((prev) => ({
           ...prev,
@@ -689,7 +689,7 @@ export function App() {
             }
             return prev;
           });
-        }, 2000);
+        }, 800);
       } else {
         // Real contract write call
         const isUpdate = !!onchainTags[hash];
@@ -758,7 +758,7 @@ export function App() {
               next.delete(hash.toLowerCase());
               return next;
             });
-          }, 3000);
+          }, 1000);
 
           setRowStates((prev) => ({
             ...prev,
@@ -775,7 +775,7 @@ export function App() {
               }
               return prev;
             });
-          }, 2000);
+          }, 800);
 
           refetchOnchainTags();
         } else {
@@ -798,7 +798,7 @@ export function App() {
   // CSV Exporter
   const handleExportCSV = async () => {
     setExportState('generating');
-    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulating CSV building
+    await new Promise((resolve) => setTimeout(resolve, 250)); // Simulating CSV building
 
     const headers = ['Date', 'Tx Hash', 'From', 'To', 'Value (MON)', 'Type', 'Category', 'Note'];
     
@@ -852,7 +852,7 @@ export function App() {
     setTimeout(() => {
       setExportState('idle');
       setDownloadedFilename(null);
-    }, 3000);
+    }, 1500);
   };
 
   const totalTaggedCount = useMemo(() => {
