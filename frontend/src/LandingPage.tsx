@@ -225,7 +225,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div className="bg-white border-2 border-primary p-6 flex flex-col gap-3">
               <svg className="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -233,15 +233,6 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
               <h3 className="font-black text-sm uppercase tracking-wider text-primary">Onchain Metadata</h3>
               <p className="text-xs text-neutral-600 leading-relaxed font-medium">
                 Your categorizations and notes are saved directly to the Monad smart contract ledger. Permanent, secure, and censorship-resistant.
-              </p>
-            </div>
-            <div className="bg-white border-2 border-primary p-6 flex flex-col gap-3">
-              <svg className="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <h3 className="font-black text-sm uppercase tracking-wider text-primary">Auto-Detect Types</h3>
-              <p className="text-xs text-neutral-600 leading-relaxed font-medium">
-                Swaps, standard transfers, and contract calls are identified automatically to save you time categorizing them manually.
               </p>
             </div>
             <div className="bg-white border-2 border-primary p-6 flex flex-col gap-3">
@@ -262,7 +253,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                 Made a mistake? Easily update tags and re-submit. The contract automatically resolves and displays your latest tags.
               </p>
             </div>
-            <div className="bg-white border-2 border-primary p-6 md:col-span-2 flex flex-col gap-3">
+            <div className="bg-white border-2 border-primary p-6 flex flex-col gap-3">
               <svg className="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
               </svg>
