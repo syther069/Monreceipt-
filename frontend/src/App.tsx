@@ -5,6 +5,7 @@ import { parseEther, formatEther, createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import { tagRegistryAbi } from './abi';
 import type { Transaction, Tag, RowState } from './types';
+import { LandingPage } from './LandingPage';
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3') as `0x${string}`;
 
@@ -207,6 +208,22 @@ export function App() {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const publicClient = usePublicClient();
+
+  // Simple path-based routing state
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path);
+  };
 
   // State
   const [demoMode, setDemoMode] = useState(false);
@@ -866,11 +883,18 @@ export function App() {
   }, [onchainTags, address, transactions]);
 
   // Main UI render
+  if (currentPath === '/' || currentPath === '') {
+    return <LandingPage onNavigate={navigate} />;
+  }
+
   return (
     <div className="min-h-screen bg-secondary text-primary selection:bg-accent selection:text-white flex flex-col">
       <header className="border-b-2 border-primary bg-white px-6 py-4 flex justify-between items-center shadow-[0_2px_0_0_rgba(0,0,0,1)] z-10">
         <div className="flex items-center gap-3">
-          <span className="font-bold tracking-tighter text-header uppercase border-2 border-primary px-2 py-0.5 bg-secondary shadow-[1px_1px_0_0_rgba(0,0,0,1)]">
+          <span 
+            onClick={() => navigate('/')}
+            className="font-bold tracking-tighter text-header uppercase border-2 border-primary px-2 py-0.5 bg-secondary shadow-[1px_1px_0_0_rgba(0,0,0,1)] cursor-pointer hover:bg-neutral-50 transition-colors"
+          >
             Gas Receipts
           </span>
           <span className="text-label text-neutral-500 uppercase tracking-widest hidden md:inline">
