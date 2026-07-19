@@ -786,7 +786,7 @@ export function App() {
             Gas Receipts
           </span>
           <span className="text-label text-neutral-500 uppercase tracking-widest hidden md:inline">
-            Monad Mainnet Expense Tracker
+            CROSS-CHAIN EXPENSE TRACKER
           </span>
         </div>
         
@@ -997,11 +997,11 @@ export function App() {
                 />
                 <button
                   type="submit"
-                  disabled={resolvingHash || !manualHash}
+                  disabled={resolvingHash || manualHash.trim().length === 0}
                   className={`border-2 border-primary font-bold px-6 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
-                    resolvingHash || !manualHash
+                    resolvingHash || manualHash.trim().length === 0
                       ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-                      : 'bg-white hover:bg-neutral-100 text-primary'
+                      : 'bg-accent text-white hover:bg-accent-dark'
                   }`}
                 >
                   {resolvingHash ? 'Resolving...' : 'Resolve Tx Hash'}
@@ -1072,7 +1072,13 @@ export function App() {
                               ?
                             </div>
                             <span className="font-semibold text-body">No transactions found</span>
-                            <span className="text-label">Use the manual input tool above or fund your address to transact.</span>
+                            <span className="text-label mb-2">Use the manual input tool above, or load demo data.</span>
+                            <button
+                              onClick={() => setDemoMode(true)}
+                              className="bg-accent text-white border-2 border-primary px-4 py-2 font-bold text-sm shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-accent-dark transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                            >
+                              Load Demo Data
+                            </button>
                           </div>
                         </td>
                       </tr>
