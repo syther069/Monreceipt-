@@ -499,7 +499,7 @@ export function App() {
       } else {
         const getRpcUrl = (chainId: number) => {
           switch (chainId) {
-            case 1: return 'https://eth.llamarpc.com';
+            case 1: return 'https://cloudflare-eth.com';
             case 8453: return 'https://mainnet.base.org';
             case 137: return 'https://polygon-rpc.com';
             case 143: return 'https://rpc.monad.xyz';
