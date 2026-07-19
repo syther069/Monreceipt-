@@ -175,7 +175,7 @@ contract TagRegistry {
             </span>
           </button>
           <a
-            href="https://x.com"
+            href="https://x.com/SYther069"
             target="_blank"
             rel="noopener noreferrer"
             className="group flex flex-col items-center gap-2 text-neutral-400 hover:text-primary transition-colors duration-150"

@@ -349,7 +349,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             </span>
           </button>
           <a
-            href="https://x.com"
+            href="https://x.com/SYther069"
             target="_blank"
             rel="noopener noreferrer"
             className="group flex flex-col items-center gap-2 text-neutral-400 hover:text-primary transition-colors duration-150"
@@ -362,7 +362,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             </span>
           </a>
           <a
-            href="https://github.com/syther069/Monreceipt-"
+            href="https://github.com/syther069/MonTally"
             target="_blank"
             rel="noopener noreferrer"
             className="group flex flex-col items-center gap-2 text-neutral-400 hover:text-primary transition-colors duration-150"
