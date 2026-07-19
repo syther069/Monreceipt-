@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAccount, useDisconnect, useReadContract, useWriteContract, usePublicClient } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { parseEther, formatEther, createPublicClient, http } from 'viem';
@@ -8,6 +8,7 @@ import type { Transaction, Tag, RowState } from './types';
 import { LandingPage } from './LandingPage';
 import { DocsPage } from './DocsPage';
 import { Logo } from './Logo';
+import { EmptyState } from './EmptyState';
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3') as `0x${string}`;
 
@@ -262,6 +263,9 @@ export function App() {
   // Multi-wallet input
   const [newWalletInput, setNewWalletInput] = useState('');
 
+  // API loading & fallback state hooks
+  const manualFallbackRef = useRef<HTMLDivElement>(null);
+
   // Time ticker to check stuck states
   const [now, setNow] = useState(Date.now());
 
@@ -368,6 +372,9 @@ export function App() {
   const fetchTxHistory = useCallback(async (userAddresses: string[]) => {
     setLoadingTxs(true);
     setTxError(null);
+    let apiFailed = false;
+    let apiErrorMsg = '';
+
     try {
       const supportedChains = [8453, 143]; // Base, Monad
       
@@ -386,6 +393,9 @@ export function App() {
             if (!url) return [];
             
             const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(`HTTP error ${response.status}`);
+            }
             const data = await response.json();
             
             if (data.status === '1' && Array.isArray(data.result)) {
@@ -415,10 +425,14 @@ export function App() {
                   chainId
                 };
               });
+            } else if (data.status === '0' && data.message !== 'No transactions found') {
+              throw new Error(data.result || data.message || 'API query limit exceeded');
             }
             return [];
-          } catch (e) {
+          } catch (e: any) {
             console.error(`Failed to fetch for chain ${chainId}:`, e);
+            apiFailed = true;
+            apiErrorMsg = e.message || 'API query failed';
             return [];
           }
         })
@@ -429,6 +443,9 @@ export function App() {
       
       allTxs.sort((a, b) => Number(b.timeStamp) - Number(a.timeStamp));
       setTransactions(allTxs.slice(0, 100));
+      if (apiFailed && allTxs.length === 0) {
+        setTxError(apiErrorMsg || 'API query failed. Please use manual Tx entry fallback.');
+      }
     } catch (err: any) {
       console.error(err);
       setTxError(err.message || 'API query failed. Please use manual Tx entry fallback.');
@@ -438,7 +455,6 @@ export function App() {
     }
   }, []);
 
-  // Fetch transactions on address or additionalWallets change
   useEffect(() => {
     if (address && !demoMode) {
       fetchTxHistory([address, ...additionalWallets]);
@@ -449,6 +465,16 @@ export function App() {
       setTransactions([]);
     }
   }, [address, additionalWallets, demoMode, fetchTxHistory]);
+
+  // Auto-expand manual fallback on explorer failure
+  useEffect(() => {
+    if (txError && isConnected) {
+      setIsManualExpanded(true);
+      setTimeout(() => {
+        manualFallbackRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [txError, isConnected]);
 
   // Sync rows' category and note when transactions or onchain/cached tags change
   useEffect(() => {
@@ -1095,12 +1121,22 @@ export function App() {
           </aside>
 
           <main className="flex-1 p-6 overflow-x-auto flex flex-col gap-6">
-            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex flex-col">
+            <div 
+              ref={manualFallbackRef}
+              className={`bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex flex-col transition-all duration-150 ${txError ? 'bg-red-50/40 border-red-500 shadow-[4px_4px_0_0_rgba(239,68,68,1)]' : ''}`}
+            >
               <button 
                 onClick={() => setIsManualExpanded(!isManualExpanded)}
                 className="w-full px-6 py-3 flex justify-between items-center text-header font-black uppercase hover:bg-neutral-50 transition-colors text-left"
               >
-                <span>{isManualExpanded ? '▼' : '▶'} Manual Tx Fallback</span>
+                <span className="flex items-center gap-2">
+                  <span>{isManualExpanded ? '▼' : '▶'} Manual Tx Fallback</span>
+                  {txError && (
+                    <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 border border-red-300 font-bold uppercase tracking-wider ml-2 animate-pulse">
+                      API FAILED — USE MANUAL ENTRY
+                    </span>
+                  )}
+                </span>
               </button>
               
               {isManualExpanded && (
@@ -1197,34 +1233,22 @@ export function App() {
                         </tr>
                       ))
                     ) : transactions.length === 0 ? (
-                      // Empty state
+                      // Context-aware empty states
                       <tr>
-                        <td colSpan={9} className="px-4 py-16">
-                          <div className="max-w-sm mx-auto border-2 border-primary p-8 bg-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-center flex flex-col gap-4">
-                            <div className="text-4xl">📄</div>
-                            <h3 className="font-bold text-header uppercase m-0">No transactions found</h3>
-                            
-                            <ConnectButton.Custom>
-                              {({ openConnectModal }) => (
-                                <button 
-                                  onClick={openConnectModal}
-                                  className="w-full bg-white text-primary border-2 border-primary font-bold px-4 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-neutral-100 transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
-                                >
-                                  Connect a wallet with history
-                                </button>
-                              )}
-                            </ConnectButton.Custom>
-                            
-                            <span className="text-label text-neutral-400 uppercase font-bold mt-2 mb-2">OR</span>
-                            
-                            <button
-                              onClick={() => setDemoMode(true)}
-                              className="w-full bg-accent text-white border-2 border-primary px-4 py-3 font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-accent-dark transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none flex items-center justify-center gap-2"
-                            >
-                              Load Demo Data <span className="text-lg leading-none">←</span>
-                            </button>
-                            <span className="text-[10px] text-neutral-500 font-medium">New wallet? Fund it or use demo.</span>
-                          </div>
+                        <td colSpan={9} className="px-4 py-8">
+                          <EmptyState 
+                            isWalletConnected={isConnected}
+                            loadError={!!txError}
+                            onOpenManualFallback={() => {
+                              setIsManualExpanded(true);
+                              setTimeout(() => {
+                                manualFallbackRef.current?.scrollIntoView({ behavior: 'smooth' });
+                              }, 50);
+                            }}
+                            onLoadDemo={() => setDemoMode(true)}
+                            onRetry={() => fetchTxHistory([address || '', ...additionalWallets])}
+                            address={address}
+                          />
                         </td>
                       </tr>
                     ) : (
