@@ -15,13 +15,13 @@ const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '0xCA79519f74
 // Pre-defined categories
 const CATEGORIES = [
   { value: '', label: 'Select Category...' },
-  { value: 'investment', label: '📈 Investment' },
-  { value: 'income', label: '💰 Income' },
-  { value: 'business_expense', label: '💼 Business Expense' },
-  { value: 'personal_expense', label: '🛒 Personal Expense' },
-  { value: 'donation', label: '🎁 Donation' },
-  { value: 'swap', label: '🔄 Swap' },
-  { value: 'other', label: '📋 Other' }
+  { value: 'investment', label: 'Investment' },
+  { value: 'income', label: 'Income' },
+  { value: 'business_expense', label: 'Business Expense' },
+  { value: 'personal_expense', label: 'Personal Expense' },
+  { value: 'donation', label: 'Donation' },
+  { value: 'swap', label: 'Swap' },
+  { value: 'other', label: 'Other' }
 ];
 
 // Mock transactions for Demo Mode
@@ -111,22 +111,27 @@ const getCurrencySymbol = (chainId: number) => {
 };
 
 const getNetworkBadge = (chainId: number) => {
-  switch (chainId) {
-    case 1: return <span className="px-2 py-0.5 bg-neutral-800 text-white text-[10px] font-bold rounded-full border border-neutral-600" title="Ethereum Mainnet">⬡ ETH</span>;
-    case 8453: return <span className="px-2 py-0.5 bg-[#0052FF] text-white text-[10px] font-bold rounded-full border border-blue-600" title="Base Mainnet">◇ BASE</span>;
-    case 137: return <span className="px-2 py-0.5 bg-[#8247E5] text-white text-[10px] font-bold rounded-full border border-purple-600" title="Polygon Mainnet">⬡ POLY</span>;
-    case 143: return <span className="px-2 py-0.5 bg-[#0A3B3C] text-white text-[10px] font-bold rounded-full border border-teal-900" title="Monad Mainnet">⬡ MONAD</span>;
-    default: return <span>UNKNOWN</span>;
-  }
+  let name = 'UNKNOWN';
+  if (chainId === 1) name = 'ETH';
+  else if (chainId === 8453) name = 'BASE';
+  else if (chainId === 137) name = 'POLY';
+  else if (chainId === 143) name = 'MONAD';
+
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border-2 border-primary bg-white text-primary text-[9px] font-black uppercase tracking-wider shadow-[1px_1px_0_0_rgba(18,18,18,1)]">
+      <span className={`w-1.5 h-1.5 rounded-full ${chainId === 143 ? 'bg-[#4F1990]' : 'bg-blue-500'}`} />
+      {name}
+    </span>
+  );
 };
 
 const AddressLink = ({ addr, isConnected, chainId }: { addr: string, isConnected: boolean, chainId: number }) => {
-  const display = isConnected ? <span className="font-bold text-blue-600">You</span> : truncateAddress(addr);
+  const display = isConnected ? <span className="font-bold text-accent">You</span> : truncateAddress(addr);
   
   return (
     <div className="inline-flex items-center gap-1 group">
       <span 
-        className="font-mono cursor-pointer hover:text-blue-600" 
+        className="font-mono cursor-pointer hover:text-accent" 
         title={`${addr} (Click to copy)`}
         onClick={() => navigator.clipboard.writeText(addr)}
       >
@@ -136,7 +141,7 @@ const AddressLink = ({ addr, isConnected, chainId }: { addr: string, isConnected
         href={getExplorerUrl(chainId, 'address', addr)}
         target="_blank"
         rel="noreferrer"
-        className="text-gray-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="text-gray-400 hover:text-accent opacity-0 group-hover:opacity-100 transition-opacity"
         title="View on Explorer"
       >
         ↗
@@ -154,7 +159,7 @@ const FromTo = ({ tx, connectedWallet }: { tx: Transaction, connectedWallet: str
       <div className="flex items-center gap-2 flex-wrap">
         <AddressLink addr={tx.from} isConnected={fromMe} chainId={tx.chainId} />
         <span className="text-gray-500 font-bold">→</span>
-        <span className="font-mono bg-yellow-100 text-yellow-800 px-1 py-0.5 text-xs rounded whitespace-nowrap">Contract Creation</span>
+        <span className="px-1.5 py-0.5 border border-neutral-300 bg-white text-neutral-800 text-[10px] font-black uppercase tracking-wider">Contract Creation</span>
       </div>
     );
   }
@@ -181,20 +186,20 @@ const ValueDisplay = ({ tx, connectedWallet }: { tx: Transaction, connectedWalle
   else if (valEth >= 1000000) displayValue = `${(valEth / 1000000).toFixed(1)}M ${currency}`;
   else displayValue = `${valEth.toLocaleString(undefined, { maximumFractionDigits: 4 })} ${currency}`;
 
-  let colorClass = 'text-gray-800';
+  let colorClass = 'text-primary';
   let prefix = '';
 
   if (toMe && fromMe) {
-    colorClass = 'text-gray-500 font-medium';
+    colorClass = 'text-neutral-500 font-bold';
     prefix = '↔ ';
   } else if (toMe && !fromMe && valEth > 0) {
-    colorClass = 'text-emerald-600 font-medium';
-    prefix = '← ';
+    colorClass = 'text-primary font-bold';
+    prefix = '+ ';
   } else if (fromMe && !toMe && valEth > 0) {
-    colorClass = 'text-gray-800 font-medium';
+    colorClass = 'text-primary font-bold';
     prefix = '→ ';
   } else {
-    colorClass = 'text-gray-800';
+    colorClass = 'text-primary';
     prefix = '';
   }
   
@@ -1260,14 +1265,14 @@ export function App() {
                         if (rowState.status === 'signing') {
                           statusContent = (
                             <span className="text-label text-amber-600 font-bold animate-pulse">
-                              ✍️ Signing...
+                              Signing...
                             </span>
                           );
                         } else if (rowState.status === 'pending') {
                           statusContent = (
                             <div className="flex flex-col gap-1">
-                              <span className="text-label text-blue-600 font-bold animate-pulse">
-                                ⏳ Pending...
+                              <span className="text-label text-accent font-bold animate-pulse">
+                                Pending...
                               </span>
                               {isStuck && (
                                 <a 
@@ -1283,15 +1288,15 @@ export function App() {
                           );
                         } else if (rowState.status === 'confirmed') {
                           statusContent = (
-                            <span className="text-label text-green-700 font-bold flex items-center gap-1">
-                              ✅ Onchain
+                            <span className="text-label text-neutral-500 font-bold">
+                              Onchain
                             </span>
                           );
                         } else if (rowState.status === 'failed') {
                           statusContent = (
                             <div className="flex flex-col gap-1">
-                              <span className="text-label text-red-600 font-bold block">
-                                ❌ Failed
+                              <span className="text-label text-neutral-500 font-bold block">
+                                Failed
                               </span>
                             </div>
                           );
@@ -1302,11 +1307,8 @@ export function App() {
 
                         const isIncoming = tx.to && address && tx.to.toLowerCase() === address.toLowerCase();
                         const isOutgoing = tx.from && address && tx.from.toLowerCase() === address.toLowerCase();
-                        let rowBg = 'bg-white';
-                        if (tx.isError === '1') rowBg = 'bg-red-50 hover:bg-red-100';
-                        else if (isIncoming && !isOutgoing) rowBg = 'bg-[#F0FDF4] hover:bg-green-100/50';
-                        else if (tx.isManual) rowBg = 'bg-blue-50/40 hover:bg-blue-50/80';
-                        else rowBg = 'bg-white hover:bg-neutral-50';
+                        let rowBg = 'bg-white hover:bg-neutral-50';
+                        if (tx.isError === '1') rowBg = 'bg-neutral-50 hover:bg-neutral-100/70';
 
                         const isNewlyTagged = newlyTaggedHashes.has(hashLower);
 
@@ -1395,16 +1397,11 @@ export function App() {
 
                             <td className="px-4 py-3 border-r border-neutral-200 text-label font-bold uppercase text-neutral-700 hidden md:table-cell align-middle">
                               <div className="flex flex-col gap-1 items-start">
-                                <span className={`px-1.5 py-0.5 border ${
-                                  tx.detectedType === 'Contract Creation' ? 'bg-yellow-100 border-yellow-300 text-yellow-800' :
-                                  tx.detectedType === 'Transfer' ? 'bg-neutral-100 border-neutral-300' : 
-                                  tx.detectedType === 'Token Transfer' ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 
-                                  'bg-blue-100 border-blue-300 text-blue-800'
-                                }`}>
+                                <span className="px-1.5 py-0.5 border border-neutral-300 bg-white text-neutral-800 text-[9px] font-black uppercase tracking-wider">
                                   {tx.detectedType}
                                 </span>
-                                {isOutgoing && !isIncoming && <span className="text-[10px] text-gray-500 font-medium">↑ Outgoing</span>}
-                                {isIncoming && !isOutgoing && <span className="text-[10px] text-emerald-600 font-medium">↓ Incoming</span>}
+                                {isOutgoing && !isIncoming && <span className="text-[9px] text-neutral-400 font-bold uppercase">↑ Outgoing</span>}
+                                {isIncoming && !isOutgoing && <span className="text-[9px] text-neutral-400 font-bold uppercase">↓ Incoming</span>}
                               </div>
                             </td>
 
@@ -1470,16 +1467,16 @@ export function App() {
                                       !rowState.category || rowState.status === 'signing' || rowState.status === 'pending'
                                         ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
                                         : rowState.status === 'success'
-                                          ? 'bg-emerald-600 border-emerald-700 text-white'
+                                          ? 'bg-neutral-800 border-neutral-800 text-white'
                                           : 'bg-accent text-white hover:bg-accent-dark'
                                     }`}
                                   >
                                     {rowState.status === 'failed' 
-                                      ? '✗ Failed - Retry?' 
+                                      ? 'Failed - Retry?' 
                                       : rowState.status === 'signing' || rowState.status === 'pending' 
                                         ? '•••' 
                                         : rowState.status === 'success'
-                                          ? '✓'
+                                          ? 'Confirmed'
                                           : 'Save'}
                                   </button>
                                 ) : (
@@ -1490,7 +1487,7 @@ export function App() {
                                 <div className="flex-1 text-right flex flex-col items-end">
                                   {statusContent}
                                   {rowState.status === 'confirmed' && (
-                                    <span className="text-[10px] text-neutral-400 font-medium">Ⓜ️ Tagged on Monad</span>
+                                    <span className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider">Tagged on Monad</span>
                                   )}
                                 </div>
                               </div>
