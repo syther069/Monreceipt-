@@ -6,6 +6,7 @@ import { base } from 'viem/chains';
 import { tagRegistryAbi } from './abi';
 import type { Transaction, Tag, RowState } from './types';
 import { LandingPage } from './LandingPage';
+import { DocsPage } from './DocsPage';
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3') as `0x${string}`;
 
@@ -885,6 +886,9 @@ export function App() {
   // Main UI render
   if (currentPath === '/' || currentPath === '') {
     return <LandingPage onNavigate={navigate} />;
+  }
+  if (currentPath === '/docs') {
+    return <DocsPage onNavigate={navigate} />;
   }
 
   return (

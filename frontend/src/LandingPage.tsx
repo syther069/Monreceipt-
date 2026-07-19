@@ -21,6 +21,12 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
           <a href="#how-it-works" className="text-[#6B7280] hover:text-[#0D0D0D] transition-colors">How It Works</a>
           <a href="#features" className="text-[#6B7280] hover:text-[#0D0D0D] transition-colors">Features</a>
           <button 
+            onClick={() => onNavigate('/docs')}
+            className="text-[#6B7280] hover:text-[#0D0D0D] transition-colors font-semibold"
+          >
+            Docs
+          </button>
+          <button 
             onClick={() => onNavigate('/app')}
             className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-4 py-2 transition-all shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none border border-[#0D0D0D] font-bold"
           >
@@ -309,10 +315,8 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
       {/* 8. FOOTER */}
       <footer className="bg-[#FAFAFA] border-t border-[#E5E7EB]">
         <div className="max-w-[600px] mx-auto py-12 flex items-center justify-center gap-12 sm:gap-12 md:gap-12 lg:gap-12">
-          <a
-            href="https://github.com/syther069/Monreceipt-/blob/main/README.md"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => onNavigate('/docs')}
             className="group flex flex-col items-center gap-2 text-[#6B7280] hover:text-[#0D0D0D] transition-colors duration-150"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -322,7 +326,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] group-hover:text-[#6B7280] transition-colors duration-150">
               Docs
             </span>
-          </a>
+          </button>
           <a
             href="https://x.com"
             target="_blank"
