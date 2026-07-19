@@ -944,21 +944,82 @@ export function App() {
                   SYNC STALE · Click to refresh
                 </button>
               ) : (
-                <span className="sync-badge text-label bg-green-100 text-green-800 border border-green-300 font-semibold px-2 py-0.5 shadow-[1px_1px_0_0_rgba(0,0,0,1)]">
-                  <span className="sync-dot" />
-                  ONCHAIN SYNC ACTIVE {lastSynced && `· Last synced ${now - lastSynced < 60000 ? '<1' : Math.floor((now - lastSynced) / 60000)} min ago`}
+                <span className="text-[10px] bg-white text-primary border-2 border-primary font-black px-2.5 py-1 shadow-[2px_2px_0_0_rgba(18,18,18,1)] uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  ONCHAIN SYNC ACTIVE {lastSynced && `· ${now - lastSynced < 60000 ? '<1' : Math.floor((now - lastSynced) / 60000)}m ago`}
                 </span>
               )}
             </div>
           )}
-          <ConnectButton 
-            chainStatus="none"
-            showBalance={false}
-            accountStatus={{
-              smallScreen: 'avatar',
-              largeScreen: 'address',
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openAccountModal,
+              openChainModal,
+              openConnectModal,
+              authenticationStatus,
+              mounted,
+            }) => {
+              const ready = mounted && authenticationStatus !== 'loading';
+              const connected =
+                ready &&
+                account &&
+                chain &&
+                (!authenticationStatus ||
+                  authenticationStatus === 'authenticated');
+
+              return (
+                <div
+                  {...(!ready && {
+                    'aria-hidden': true,
+                    'style': {
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                    },
+                  })}
+                >
+                  {(() => {
+                    if (!connected) {
+                      return (
+                        <button
+                          onClick={openConnectModal}
+                          type="button"
+                          className="bg-accent hover:bg-accent-dark text-white px-4 py-2 font-black uppercase text-xs tracking-wider border-2 border-primary shadow-[2px_2px_0_0_rgba(18,18,18,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_rgba(18,18,18,1)] transition-all flex items-center gap-2"
+                        >
+                          Connect Wallet
+                        </button>
+                      );
+                    }
+
+                    if (chain.unsupported) {
+                      return (
+                        <button
+                          onClick={openChainModal}
+                          type="button"
+                          className="bg-white hover:bg-neutral-50 text-primary px-4 py-2 font-black uppercase text-xs tracking-wider border-2 border-primary shadow-[2px_2px_0_0_rgba(18,18,18,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_rgba(18,18,18,1)] transition-all"
+                        >
+                          Wrong Network
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <button
+                        onClick={openAccountModal}
+                        type="button"
+                        className="bg-white hover:bg-neutral-50 text-primary px-3.5 py-2 font-mono text-xs font-bold border-2 border-primary shadow-[2px_2px_0_0_rgba(18,18,18,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_rgba(18,18,18,1)] transition-all flex items-center gap-2"
+                      >
+                        <span>{account.displayName}</span>
+                        <span className="text-[10px]">▼</span>
+                      </button>
+                    );
+                  })()}
+                </div>
+              );
             }}
-          />
+          </ConnectButton.Custom>
         </div>
       </header>
 
