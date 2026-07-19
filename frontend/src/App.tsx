@@ -501,7 +501,7 @@ export function App() {
           switch (chainId) {
             case 1: return 'https://cloudflare-eth.com';
             case 8453: return 'https://mainnet.base.org';
-            case 137: return 'https://polygon-rpc.com';
+            case 137: return 'https://polygon.llamarpc.com';
             case 143: return 'https://rpc.monad.xyz';
             default: return 'https://rpc.monad.xyz';
           }
@@ -536,7 +536,7 @@ export function App() {
       }
     } catch (err: any) {
       console.error(err);
-      setManualError(`RPC error: Could not fetch transaction details from network ${manualNetwork}. Verify the hash and network.`);
+      setManualError(`Transaction not found. Please verify the hash actually belongs to the selected network.`);
     } finally {
       setResolvingHash(false);
     }
