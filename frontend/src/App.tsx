@@ -11,13 +11,13 @@ const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '0xCA79519f74
 // Pre-defined categories
 const CATEGORIES = [
   { value: '', label: 'Select Category...' },
-  { value: 'investment', label: 'Investment' },
-  { value: 'income', label: 'Income' },
-  { value: 'business_expense', label: 'Business Expense' },
-  { value: 'personal_expense', label: 'Personal Expense' },
-  { value: 'donation', label: 'Donation' },
-  { value: 'swap', label: 'Swap' },
-  { value: 'other', label: 'Other' }
+  { value: 'investment', label: '📈 Investment' },
+  { value: 'income', label: '💰 Income' },
+  { value: 'business_expense', label: '💼 Business Expense' },
+  { value: 'personal_expense', label: '🛒 Personal Expense' },
+  { value: 'donation', label: '🎁 Donation' },
+  { value: 'swap', label: '🔄 Swap' },
+  { value: 'other', label: '📋 Other' }
 ];
 
 // Mock transactions for Demo Mode
@@ -208,6 +208,7 @@ export function App() {
   
   // Onchain tags
   const [onchainTags, setOnchainTags] = useState<Record<string, Tag>>({});
+  const [lastSynced, setLastSynced] = useState<number | null>(null);
 
   // Manual Hash Fallback
   const [manualHash, setManualHash] = useState('');
@@ -288,6 +289,7 @@ export function App() {
         }
       });
       setOnchainTags(tagsMap);
+      setLastSynced(Date.now());
 
       // Merge onchain tags into localStorage cache
       if (address) {
@@ -793,9 +795,18 @@ export function App() {
         <div className="flex items-center gap-4">
           {isConnected && (
             <div className="flex items-center gap-2">
-              <span className="text-label bg-green-100 text-green-800 border border-green-300 font-semibold px-2 py-0.5">
-                ONCHAIN SYNC ACTIVE
-              </span>
+              {lastSynced && now - lastSynced > 300000 ? (
+                <button 
+                  onClick={() => refetchOnchainTags()}
+                  className="text-label bg-red-100 text-red-800 border border-red-300 font-semibold px-2 py-0.5 hover:bg-red-200 transition-colors shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                >
+                  SYNC STALE · Click to refresh
+                </button>
+              ) : (
+                <span className="text-label bg-green-100 text-green-800 border border-green-300 font-semibold px-2 py-0.5 shadow-[1px_1px_0_0_rgba(0,0,0,1)]">
+                  ONCHAIN SYNC ACTIVE {lastSynced && `· Last synced ${now - lastSynced < 60000 ? '<1' : Math.floor((now - lastSynced) / 60000)} min ago`}
+                </span>
+              )}
             </div>
           )}
           <ConnectButton 
