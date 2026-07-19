@@ -32,7 +32,6 @@
   background: #D4D4D4;
 }
 
-/* Utilitarian Form Elements */
 input, select {
   font-size: 14px;
   font-family: 'Inter', sans-serif;
@@ -40,3 +39,88 @@ input, select {
 input::placeholder {
   color: #A3A3A3;
 }
+
+/* Save Button state styles */
+.btn-save {
+  transition: all 150ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-save:active {
+  transform: scale(0.96);
+}
+
+.btn-save.loading {
+  color: transparent !important;
+}
+
+/* Loader dots style for button loading state */
+.btn-save.loading::before {
+  content: '•••';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  font-size: 16px;
+  animation: pulse-dots 1s infinite alternate;
+}
+
+@keyframes pulse-dots {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+.btn-save.success {
+  background-color: #059669 !important;
+  border-color: #047857 !important;
+  color: white !important;
+}
+
+/* Ripple on click */
+.btn-save::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.3);
+  transform: scale(0);
+  border-radius: 50%;
+  transition: transform 300ms ease;
+}
+
+.btn-save:active::after {
+  transform: scale(2);
+}
+
+/* Dropdown Menu animation */
+.dropdown-menu {
+  transform-origin: top;
+  animation: dropdown-open 200ms ease;
+}
+
+.dropdown-item {
+  opacity: 0;
+  transform: translateY(-4px);
+  animation: item-in 150ms ease forwards;
+}
+
+.dropdown-item:nth-child(1) { animation-delay: 0ms; }
+.dropdown-item:nth-child(2) { animation-delay: 20ms; }
+.dropdown-item:nth-child(3) { animation-delay: 40ms; }
+.dropdown-item:nth-child(4) { animation-delay: 60ms; }
+.dropdown-item:nth-child(5) { animation-delay: 80ms; }
+.dropdown-item:nth-child(6) { animation-delay: 100ms; }
+.dropdown-item:nth-child(7) { animation-delay: 120ms; }
+.dropdown-item:nth-child(8) { animation-delay: 140ms; }
+
+@keyframes dropdown-open {
+  from { opacity: 0; transform: scaleY(0.95); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes item-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+

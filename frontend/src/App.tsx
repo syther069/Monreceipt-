@@ -228,6 +228,7 @@ export function App() {
   const [resolvingHash, setResolvingHash] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
   const [isManualExpanded, setIsManualExpanded] = useState(false);
+  const [activeDropdownHash, setActiveDropdownHash] = useState<string | null>(null);
 
   // Multi-wallet input
   const [newWalletInput, setNewWalletInput] = useState('');
@@ -652,8 +653,20 @@ export function App() {
         
         setRowStates((prev) => ({
           ...prev,
-          [hash]: { ...prev[hash], status: 'confirmed' }
+          [hash]: { ...prev[hash], status: 'success' }
         }));
+        
+        setTimeout(() => {
+          setRowStates((prev) => {
+            if (prev[hash]?.status === 'success') {
+              return {
+                ...prev,
+                [hash]: { ...prev[hash], status: 'confirmed' }
+              };
+            }
+            return prev;
+          });
+        }, 2000);
       } else {
         // Real contract write call
         const isUpdate = !!onchainTags[hash];
@@ -713,8 +726,20 @@ export function App() {
 
           setRowStates((prev) => ({
             ...prev,
-            [hash]: { ...prev[hash], status: 'confirmed' }
+            [hash]: { ...prev[hash], status: 'success' }
           }));
+
+          setTimeout(() => {
+            setRowStates((prev) => {
+              if (prev[hash]?.status === 'success') {
+                return {
+                  ...prev,
+                  [hash]: { ...prev[hash], status: 'confirmed' }
+                };
+              }
+              return prev;
+            });
+          }, 2000);
 
           refetchOnchainTags();
         } else {
@@ -1155,7 +1180,7 @@ export function App() {
                           originalTag.note !== rowState.note;
                         
                         // Show "Save" button if modified, or "Edit" if confirmed & unmodified
-                        const showSave = isModified || rowState.status === 'failed';
+                        const showSave = isModified || rowState.status === 'failed' || rowState.status === 'signing' || rowState.status === 'pending' || rowState.status === 'success';
 
                         // Render row-level status states
                         let statusContent = null;
@@ -1313,18 +1338,39 @@ export function App() {
                             </td>
 
                             <td className="px-4 py-2 border-r border-neutral-200 block md:table-cell w-full md:w-auto mt-2 md:mt-0 align-middle">
-                              <select
-                                value={rowState.category}
-                                onChange={(e) => handleInputChange(hashLower, 'category', e.target.value)}
-                                disabled={rowState.status === 'signing' || rowState.status === 'pending'}
-                                className="w-full bg-secondary border-2 border-primary py-1 px-2 font-medium focus:border-accent outline-none mb-2 md:mb-0"
-                              >
-                                {CATEGORIES.map((c) => (
-                                  <option key={c.value} value={c.value}>
-                                    {c.label}
-                                  </option>
-                                ))}
-                              </select>
+                              <div className="relative w-full mb-2 md:mb-0">
+                                <button
+                                  type="button"
+                                  disabled={rowState.status === 'signing' || rowState.status === 'pending' || rowState.status === 'success'}
+                                  onClick={() => setActiveDropdownHash(activeDropdownHash === hashLower ? null : hashLower)}
+                                  className="w-full bg-secondary border-2 border-primary py-1 px-2 font-medium focus:border-accent outline-none text-left flex justify-between items-center text-sm disabled:opacity-50"
+                                >
+                                  <span>{CATEGORIES.find(c => c.value === rowState.category)?.label || 'Select Category...'}</span>
+                                  <span className="text-xs">▼</span>
+                                </button>
+                                
+                                {activeDropdownHash === hashLower && (
+                                  <>
+                                    <div className="fixed inset-0 z-20" onClick={() => setActiveDropdownHash(null)} />
+                                    <div className="absolute left-0 right-0 mt-1 bg-white border-2 border-primary shadow-[2px_2px_0_0_rgba(0,0,0,1)] z-30 dropdown-menu max-h-60 overflow-y-auto">
+                                      {CATEGORIES.map((c, idx) => (
+                                        <button
+                                          key={c.value}
+                                          type="button"
+                                          onClick={() => {
+                                            handleInputChange(hashLower, 'category', c.value);
+                                            setActiveDropdownHash(null);
+                                          }}
+                                          className="dropdown-item w-full text-left px-3 py-1.5 hover:bg-secondary font-medium transition-colors text-sm flex items-center gap-2"
+                                          style={{ animationDelay: `${idx * 20}ms` }}
+                                        >
+                                          {c.label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </td>
 
                             <td className="px-4 py-2 border-r border-neutral-200 block md:table-cell w-full md:w-auto align-middle">
@@ -1344,14 +1390,26 @@ export function App() {
                                 {showSave ? (
                                   <button
                                     onClick={() => handleSaveTag(hashLower)}
-                                    disabled={!rowState.category || rowState.status === 'signing' || rowState.status === 'pending'}
-                                    className={`border-2 border-primary px-3 py-1 font-bold text-label shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all ${
+                                    disabled={!rowState.category || rowState.status === 'signing' || rowState.status === 'pending' || rowState.status === 'success'}
+                                    className={`btn-save border-2 border-primary px-3 py-1 font-bold text-label shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all ${
+                                      rowState.status === 'signing' || rowState.status === 'pending' ? 'loading' : ''
+                                    } ${
+                                      rowState.status === 'success' ? 'success' : ''
+                                    } ${
                                       !rowState.category || rowState.status === 'signing' || rowState.status === 'pending'
                                         ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-                                        : 'bg-accent text-white hover:bg-accent-dark'
+                                        : rowState.status === 'success'
+                                          ? 'bg-emerald-600 border-emerald-700 text-white'
+                                          : 'bg-accent text-white hover:bg-accent-dark'
                                     }`}
                                   >
-                                    {rowState.status === 'failed' ? '✗ Failed - Retry?' : rowState.status === 'signing' || rowState.status === 'pending' ? '•••' : 'Save'}
+                                    {rowState.status === 'failed' 
+                                      ? '✗ Failed - Retry?' 
+                                      : rowState.status === 'signing' || rowState.status === 'pending' 
+                                        ? '•••' 
+                                        : rowState.status === 'success'
+                                          ? '✓'
+                                          : 'Save'}
                                   </button>
                                 ) : (
                                   <span className="text-label text-neutral-400 font-bold border border-transparent px-3 py-1">
@@ -1377,14 +1435,26 @@ export function App() {
                               {showSave ? (
                                   <button
                                     onClick={() => handleSaveTag(hashLower)}
-                                    disabled={!rowState.category || rowState.status === 'signing' || rowState.status === 'pending'}
-                                    className={`border-2 border-primary px-6 py-2 font-bold text-label shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all w-full ${
+                                    disabled={!rowState.category || rowState.status === 'signing' || rowState.status === 'pending' || rowState.status === 'success'}
+                                    className={`btn-save border-2 border-primary px-6 py-2 font-bold text-label shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all w-full ${
+                                      rowState.status === 'signing' || rowState.status === 'pending' ? 'loading' : ''
+                                    } ${
+                                      rowState.status === 'success' ? 'success' : ''
+                                    } ${
                                       !rowState.category || rowState.status === 'signing' || rowState.status === 'pending'
                                         ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-                                        : 'bg-accent text-white hover:bg-accent-dark'
+                                        : rowState.status === 'success'
+                                          ? 'bg-emerald-600 border-emerald-700 text-white'
+                                          : 'bg-accent text-white hover:bg-accent-dark'
                                     }`}
                                   >
-                                    {rowState.status === 'failed' ? '✗ Failed - Retry?' : rowState.status === 'signing' || rowState.status === 'pending' ? '•••' : 'Save Transaction Tag'}
+                                    {rowState.status === 'failed' 
+                                      ? '✗ Failed - Retry?' 
+                                      : rowState.status === 'signing' || rowState.status === 'pending' 
+                                        ? '•••' 
+                                        : rowState.status === 'success'
+                                          ? '✓'
+                                          : 'Save Transaction Tag'}
                                   </button>
                                 ) : (
                                   <div className="w-full text-center bg-neutral-100 border border-neutral-300 py-2 flex flex-col items-center">

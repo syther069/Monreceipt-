@@ -21,7 +21,7 @@ export interface Tag {
   exists: boolean;
 }
 
-export type RowStatus = 'idle' | 'signing' | 'pending' | 'confirmed' | 'failed';
+export type RowStatus = 'idle' | 'signing' | 'pending' | 'confirmed' | 'failed' | 'success';
 
 export interface RowState {
   category: string;
