@@ -262,6 +262,10 @@ export function App() {
   // Table scroll shadow state
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Filter & Tagged view states
+  const [viewFilter, setViewFilter] = useState<'all' | 'tagged'>('all');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('');
+
   // Set of newly tagged transaction hashes
   const [newlyTaggedHashes, setNewlyTaggedHashes] = useState<Set<string>>(new Set());
 
@@ -1243,68 +1247,156 @@ export function App() {
 
 
             {/* Transaction Ledger Table */}
-            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(18,18,18,1)] flex-1 flex flex-col overflow-hidden">
-              <div className="bg-white text-primary px-6 py-4 flex justify-between items-center border-b-2 border-primary">
-                <span className="font-black text-header uppercase tracking-wider">Transaction Expense Ledger</span>
-                {demoMode && (
-                  <span className="bg-white text-primary text-[10px] font-black px-2.5 py-1 border-2 border-primary shadow-[2px_2px_0_0_rgba(18,18,18,1)] uppercase tracking-wider">
-                    Demo Simulator Active
-                  </span>
-                )}
-              </div>
+            {(() => {
+              const taggedCount = transactions.filter(tx => {
+                const hashLower = tx.hash.toLowerCase();
+                const rowState = rowStates[hashLower];
+                const originalTag = onchainTags[hashLower];
+                return Boolean((rowState && rowState.category) || (originalTag && originalTag.category));
+              }).length;
 
-              <div className="flex-1 overflow-auto" onScroll={(e) => setIsScrolled(e.currentTarget.scrollTop > 0)}>
-                <table className="w-full text-left border-collapse min-w-[700px]">
-                  <thead>
-                    <tr className={`border-b-2 border-primary bg-secondary text-label uppercase text-neutral-500 font-bold hidden md:table-row sticky top-0 z-10 table-header-sticky ${isScrolled ? 'scrolled' : ''}`}>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[140px]">Date</th>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[120px]">Tx Hash</th>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[100px]">Network</th>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[280px]">From → To</th>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[100px] text-right">Value</th>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[120px]">Type</th>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[140px]">Category</th>
-                      <th className="px-4 py-3 border-r border-neutral-200 w-[180px]">Note (max 100 chars)</th>
-                      <th className="px-4 py-3 w-[160px]">Status & Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className={`table-body-fade ${loadingTxs ? 'switching' : 'loaded'}`}>
-                    {loadingTxs ? (
-                      // Skeleton Loading rows
-                      Array.from({ length: 5 }).map((_, i) => (
-                        <tr key={i} className="border-b border-neutral-200 animate-pulse block md:table-row">
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-24"></div></td>
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-20"></div></td>
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-12"></div></td>
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-48"></div></td>
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-16"></div></td>
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-16"></div></td>
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-8 bg-neutral-200 w-full"></div></td>
-                          <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-8 bg-neutral-200 w-full"></div></td>
-                          <td className="px-4 py-4 block md:table-cell"><div className="h-8 bg-neutral-200 w-16"></div></td>
+              const displayedTransactions = transactions.filter(tx => {
+                const hashLower = tx.hash.toLowerCase();
+                const rowState = rowStates[hashLower];
+                const originalTag = onchainTags[hashLower];
+                const category = rowState?.category || originalTag?.category || '';
+                const isTagged = Boolean(category);
+
+                if (viewFilter === 'tagged' && !isTagged) return false;
+                if (selectedCategoryFilter && category !== selectedCategoryFilter) return false;
+                return true;
+              });
+
+              return (
+                <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(18,18,18,1)] flex-1 flex flex-col overflow-hidden">
+                  <div className="bg-white text-primary px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-primary gap-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="font-black text-header uppercase tracking-wider">Transaction Expense Ledger</span>
+                      {demoMode && (
+                        <span className="bg-white text-primary text-[10px] font-black px-2.5 py-1 border-2 border-primary shadow-[2px_2px_0_0_rgba(18,18,18,1)] uppercase tracking-wider">
+                          Demo Simulator Active
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Filter Bar Controls */}
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      {/* Tabs */}
+                      <div className="inline-flex border-2 border-primary bg-white shadow-[2px_2px_0_0_rgba(18,18,18,1)]">
+                        <button
+                          type="button"
+                          onClick={() => setViewFilter('all')}
+                          className={`px-3 py-1 font-black uppercase text-[10px] tracking-wider transition-colors ${
+                            viewFilter === 'all'
+                              ? 'bg-primary text-white'
+                              : 'bg-white text-primary hover:bg-neutral-100'
+                          }`}
+                        >
+                          All ({transactions.length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setViewFilter('tagged')}
+                          className={`px-3 py-1 font-black uppercase text-[10px] tracking-wider transition-colors border-l-2 border-primary flex items-center gap-1.5 ${
+                            viewFilter === 'tagged'
+                              ? 'bg-accent text-white'
+                              : 'bg-white text-primary hover:bg-neutral-100'
+                          }`}
+                        >
+                          <span>Tagged Only ({taggedCount})</span>
+                        </button>
+                      </div>
+
+                      {/* Category Filter Dropdown */}
+                      <select
+                        value={selectedCategoryFilter}
+                        onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                        className="border-2 border-primary bg-white text-primary font-black uppercase text-[10px] tracking-wider px-2.5 py-1 shadow-[2px_2px_0_0_rgba(18,18,18,1)] focus:outline-none focus:border-accent cursor-pointer"
+                      >
+                        <option value="">All Categories</option>
+                        {CATEGORIES.filter(c => c.value !== '').map(c => (
+                          <option key={c.value} value={c.value}>{c.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 overflow-auto" onScroll={(e) => setIsScrolled(e.currentTarget.scrollTop > 0)}>
+                    <table className="w-full text-left border-collapse min-w-[700px]">
+                      <thead>
+                        <tr className={`border-b-2 border-primary bg-secondary text-label uppercase text-neutral-500 font-bold hidden md:table-row sticky top-0 z-10 table-header-sticky ${isScrolled ? 'scrolled' : ''}`}>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[140px]">Date</th>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[120px]">Tx Hash</th>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[100px]">Network</th>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[280px]">From → To</th>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[100px] text-right">Value</th>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[120px]">Type</th>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[140px]">Category</th>
+                          <th className="px-4 py-3 border-r border-neutral-200 w-[180px]">Note (max 100 chars)</th>
+                          <th className="px-4 py-3 w-[160px]">Status & Action</th>
                         </tr>
-                      ))
-                    ) : transactions.length === 0 ? (
-                      // Context-aware empty states
-                      <tr>
-                        <td colSpan={9} className="px-4 py-8">
-                          <EmptyState 
-                            isWalletConnected={isConnected}
-                            loadError={!!txError}
-                            onOpenManualFallback={() => {
-                              setIsManualExpanded(true);
-                              setTimeout(() => {
-                                manualFallbackRef.current?.scrollIntoView({ behavior: 'smooth' });
-                              }, 50);
-                            }}
-                            onLoadDemo={() => setDemoMode(true)}
-                            onRetry={() => fetchTxHistory([address || '', ...additionalWallets])}
-                            address={address}
-                          />
-                        </td>
-                      </tr>
-                    ) : (
-                      transactions.map((tx, idx) => {
+                      </thead>
+                      <tbody className={`table-body-fade ${loadingTxs ? 'switching' : 'loaded'}`}>
+                        {loadingTxs ? (
+                          // Skeleton Loading rows
+                          Array.from({ length: 5 }).map((_, i) => (
+                            <tr key={i} className="border-b border-neutral-200 animate-pulse block md:table-row">
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-24"></div></td>
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-20"></div></td>
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-12"></div></td>
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-48"></div></td>
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-16"></div></td>
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-4 bg-neutral-200 w-16"></div></td>
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-8 bg-neutral-200 w-full"></div></td>
+                              <td className="px-4 py-4 border-r border-neutral-200 block md:table-cell"><div className="h-8 bg-neutral-200 w-full"></div></td>
+                              <td className="px-4 py-4 block md:table-cell"><div className="h-8 bg-neutral-200 w-16"></div></td>
+                            </tr>
+                          ))
+                        ) : transactions.length === 0 ? (
+                          // Context-aware empty states
+                          <tr>
+                            <td colSpan={9} className="px-4 py-8">
+                              <EmptyState 
+                                isWalletConnected={isConnected}
+                                loadError={!!txError}
+                                onOpenManualFallback={() => {
+                                  setIsManualExpanded(true);
+                                  setTimeout(() => {
+                                    manualFallbackRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                  }, 50);
+                                }}
+                                onLoadDemo={() => setDemoMode(true)}
+                                onRetry={() => fetchTxHistory([address || '', ...additionalWallets])}
+                                address={address}
+                              />
+                            </td>
+                          </tr>
+                        ) : displayedTransactions.length === 0 ? (
+                          <tr>
+                            <td colSpan={9} className="px-4 py-12 text-center">
+                              <div className="flex flex-col items-center justify-center gap-3 max-w-md mx-auto">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">[ No Filtered Tags ]</span>
+                                <h3 className="text-lg font-black uppercase tracking-tight text-primary">No Matching Transactions</h3>
+                                <p className="text-xs text-neutral-500 font-medium">
+                                  {viewFilter === 'tagged' 
+                                    ? 'You have not tagged any transactions yet. Select a category on any transaction in your ledger and click Save to store it onchain.' 
+                                    : 'No transactions match the selected category filter.'}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setViewFilter('all');
+                                    setSelectedCategoryFilter('');
+                                  }}
+                                  className="mt-1 bg-accent hover:bg-accent-dark text-white font-black uppercase text-xs tracking-wider px-4 py-2 border-2 border-primary shadow-[2px_2px_0_0_rgba(18,18,18,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+                                >
+                                  Reset Filters
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          displayedTransactions.map((tx, idx) => {
                         const hashLower = tx.hash.toLowerCase();
                         const rowState = rowStates[hashLower] || { category: '', note: '', status: 'idle' };
                         const originalTag = onchainTags[hashLower];
@@ -1608,6 +1700,8 @@ export function App() {
                 </table>
               </div>
             </div>
+          );
+        })()}
           </main>
       </div>
     </div>
