@@ -935,40 +935,7 @@ export function App() {
         </div>
       </header>
 
-      {!isConnected && !demoMode ? (
-        <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 max-w-xl mx-auto text-center gap-8">
-          <div className="border-2 border-primary bg-white p-8 shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-left flex flex-col gap-6">
-            <h1 className="text-header font-bold uppercase tracking-tight border-b-2 border-primary pb-3">
-              Tag your onchain transactions. Export for taxes.
-            </h1>
-            <p className="text-body text-neutral-600">
-              A clean, utilitarian tool built to help you tag your Monad Mainnet gas fees, token transfers, and smart contract transactions. Stores tags onchain via the <code className="font-mono text-label bg-neutral-100 border border-neutral-300 px-1 py-0.5">TagRegistry</code> smart contract and exports instant formatted CSV expense spreadsheets.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 mt-2">
-              <button 
-                onClick={() => setDemoMode(true)}
-                className="bg-neutral-100 hover:bg-neutral-200 text-primary border-2 border-primary font-bold px-6 py-2 transition-all shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none text-center"
-              >
-                Launch Demo Mode
-              </button>
-              <div className="flex-1 flex justify-center sm:justify-start">
-                <ConnectButton.Custom>
-                  {({ openConnectModal }) => (
-                    <button 
-                      onClick={openConnectModal}
-                      className="w-full bg-accent hover:bg-accent-dark text-white border-2 border-primary font-bold px-6 py-2 transition-all shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
-                    >
-                      Connect Wallet
-                    </button>
-                  )}
-                </ConnectButton.Custom>
-              </div>
-            </div>
-          </div>
-        </main>
-      ) : (
-        <div className="flex-1 flex flex-col md:flex-row page-enter">
+      <div className="flex-1 flex flex-col md:flex-row page-enter">
           <aside className="w-full md:w-[20%] border-r-0 md:border-r-2 border-b-2 md:border-b-0 border-primary bg-white p-6 flex flex-col justify-between gap-8">
             <div className="flex flex-col gap-6">
               {/* ACTIVE WALLET */}
@@ -1574,8 +1541,7 @@ export function App() {
               </div>
             </div>
           </main>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
