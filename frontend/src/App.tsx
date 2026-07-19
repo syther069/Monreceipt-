@@ -108,32 +108,31 @@ const getCurrencySymbol = (chainId: number) => {
 
 const getNetworkBadge = (chainId: number) => {
   switch (chainId) {
-    case 1: return <span className="px-1.5 py-0.5 border bg-blue-50 border-blue-200 text-blue-800 text-[10px] font-bold rounded" title="Ethereum Mainnet">🟦 ETH</span>;
-    case 8453: return <span className="px-1.5 py-0.5 border bg-blue-500 border-blue-600 text-white text-[10px] font-bold rounded" title="Base Mainnet">🔵 BASE</span>;
-    case 137: return <span className="px-1.5 py-0.5 border bg-purple-50 border-purple-200 text-purple-800 text-[10px] font-bold rounded" title="Polygon Mainnet">🟪 POLY</span>;
-    case 143: return <span className="px-1.5 py-0.5 border bg-indigo-50 border-indigo-200 text-indigo-800 text-[10px] font-bold rounded" title="Monad Mainnet">Ⓜ️ MONAD</span>;
+    case 1: return <span className="px-2 py-0.5 bg-neutral-800 text-white text-[10px] font-bold rounded-full border border-neutral-600" title="Ethereum Mainnet">⬡ ETH</span>;
+    case 8453: return <span className="px-2 py-0.5 bg-[#0052FF] text-white text-[10px] font-bold rounded-full border border-blue-600" title="Base Mainnet">◇ BASE</span>;
+    case 137: return <span className="px-2 py-0.5 bg-[#8247E5] text-white text-[10px] font-bold rounded-full border border-purple-600" title="Polygon Mainnet">⬡ POLY</span>;
+    case 143: return <span className="px-2 py-0.5 bg-[#0A3B3C] text-white text-[10px] font-bold rounded-full border border-teal-900" title="Monad Mainnet">⬡ MONAD</span>;
     default: return <span>UNKNOWN</span>;
   }
 };
 
 const AddressLink = ({ addr, isConnected, chainId }: { addr: string, isConnected: boolean, chainId: number }) => {
-  if (isConnected) {
-    return <span className="font-bold text-blue-600">You</span>;
-  }
+  const display = isConnected ? <span className="font-bold text-blue-600">You</span> : truncateAddress(addr);
+  
   return (
-    <div className="inline-flex items-center gap-1">
+    <div className="inline-flex items-center gap-1 group">
       <span 
         className="font-mono cursor-pointer hover:text-blue-600" 
         title={`${addr} (Click to copy)`}
         onClick={() => navigator.clipboard.writeText(addr)}
       >
-        {truncateAddress(addr)}
+        {display}
       </span>
       <a
         href={getExplorerUrl(chainId, 'address', addr)}
         target="_blank"
         rel="noreferrer"
-        className="text-gray-400 hover:text-blue-600"
+        className="text-gray-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
         title="View on Explorer"
       >
         ↗
@@ -159,7 +158,7 @@ const FromTo = ({ tx, connectedWallet }: { tx: Transaction, connectedWallet: str
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <AddressLink addr={tx.from} isConnected={fromMe} chainId={tx.chainId} />
-      <span className="text-gray-500 font-bold">{toMe && !fromMe ? '←' : '→'}</span>
+      <span className="text-gray-500 font-bold">→</span>
       <AddressLink addr={tx.to} isConnected={toMe} chainId={tx.chainId} />
     </div>
   );
@@ -179,14 +178,27 @@ const ValueDisplay = ({ tx, connectedWallet }: { tx: Transaction, connectedWalle
   else displayValue = `${valEth.toLocaleString(undefined, { maximumFractionDigits: 4 })} ${currency}`;
 
   let colorClass = 'text-gray-800';
-  if (toMe && !fromMe && valEth > 0) colorClass = 'text-emerald-600 font-medium';
-  if (toMe && fromMe) colorClass = 'text-gray-500';
+  let prefix = '';
+
+  if (toMe && fromMe) {
+    colorClass = 'text-gray-500 font-medium';
+    prefix = '↔ ';
+  } else if (toMe && !fromMe && valEth > 0) {
+    colorClass = 'text-emerald-600 font-medium';
+    prefix = '← ';
+  } else if (fromMe && !toMe && valEth > 0) {
+    colorClass = 'text-gray-800 font-medium';
+    prefix = '→ ';
+  } else {
+    colorClass = 'text-gray-800';
+    prefix = '';
+  }
   
   if (tx.isError === '1') colorClass += ' line-through opacity-50';
 
   return (
     <span className={colorClass} title={`${tx.value} wei`}>
-      {displayValue}
+      {prefix}{displayValue}
     </span>
   );
 };
