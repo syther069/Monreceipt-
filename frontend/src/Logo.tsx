@@ -9,25 +9,29 @@ interface LogoProps {
 export function Logo({ variant = 'boxed', className = '', onClick }: LogoProps) {
   if (variant === 'icon') {
     return (
-      <svg onClick={onClick} className={`w-6 h-6 ${className}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="2" y="2" width="20" height="20" stroke="#0D0D0D" strokeWidth="2" fill="none"/>
-        <line x1="6" y1="7" x2="18" y2="7" stroke="#0D0D0D" strokeWidth="1.5"/>
-        <line x1="6" y1="11" x2="18" y2="11" stroke="#0D0D0D" strokeWidth="1.5"/>
-        <line x1="6" y1="15" x2="14" y2="15" stroke="#0D0D0D" strokeWidth="1.5"/>
-        <rect x="6" y="17" width="2" height="2" fill="#0D0D0D" stroke="none"/>
-        <rect x="9" y="17" width="2" height="2" fill="#0D0D0D" stroke="none"/>
-        <rect x="12" y="17" width="2" height="2" fill="#0D0D0D" stroke="none"/>
-        <rect x="15" y="17" width="2" height="2" fill="#0D0D0D" stroke="none"/>
+      <svg 
+        onClick={onClick} 
+        className={`w-6 h-6 stroke-[#0D0D0D] ${className}`} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      >
+        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+        <line x1="8" y1="8" x2="16" y2="8" />
+        <line x1="8" y1="12" x2="16" y2="12" />
+        <line x1="8" y1="16" x2="13" y2="16" />
       </svg>
     );
   }
 
   if (variant === 'horizontal') {
     return (
-      <div onClick={onClick} className={`flex items-center gap-3 ${className}`}>
-        <Logo variant="icon" />
-        <span className="text-lg font-semibold text-[#0D0D0D] tracking-tight">
-          <span className="font-bold uppercase tracking-wider">MON</span>receipt
+      <div onClick={onClick} className={`flex items-center gap-2 cursor-pointer select-none ${className}`}>
+        <Logo variant="icon" className="w-5 h-5 text-[#0D0D0D]" />
+        <span className="font-sans text-sm tracking-wider text-[#0D0D0D] flex items-center font-bold">
+          <span className="font-black uppercase tracking-widest mr-0.5">MON</span>RECEIPT
         </span>
       </div>
     );
@@ -35,9 +39,19 @@ export function Logo({ variant = 'boxed', className = '', onClick }: LogoProps) 
 
   // boxed (default)
   return (
-    <div onClick={onClick} className={`inline-flex items-center gap-1 px-3 py-1.5 border-2 border-[#0D0D0D] bg-white ${className}`}>
-      <span className="text-sm font-bold tracking-widest text-[#0D0D0D]">MON</span>
-      <span className="text-sm font-normal text-[#0D0D0D]">receipt</span>
+    <div 
+      onClick={onClick} 
+      className={`group inline-flex items-center gap-2.5 px-3 py-1 border-2 border-[#0D0D0D] bg-[#0D0D0D] text-white hover:bg-white hover:text-[#0D0D0D] transition-all duration-150 cursor-pointer select-none ${className}`}
+    >
+      <svg className="w-4 h-4 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+        <line x1="8" y1="8" x2="16" y2="8" />
+        <line x1="8" y1="12" x2="16" y2="12" />
+        <line x1="8" y1="16" x2="13" y2="16" />
+      </svg>
+      <span className="font-sans text-xs tracking-widest font-black uppercase">
+        MON<span className="font-light text-[#E5E7EB] group-hover:text-[#6B7280] transition-colors duration-150">RECEIPT</span>
+      </span>
     </div>
   );
 }
