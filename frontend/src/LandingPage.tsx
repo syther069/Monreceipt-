@@ -320,23 +320,23 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
       </section>
 
       {/* 7. FINAL CTA */}
-      <section className="bg-primary text-white py-20 lg:py-28 text-center flex flex-col items-center justify-center px-6">
+      <section className="bg-accent text-white py-20 lg:py-28 text-center flex flex-col items-center justify-center px-6 border-b-2 border-primary">
         <div className="max-w-2xl flex flex-col gap-6">
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-black uppercase tracking-tighter leading-[1.1]">
             Get your onchain finances organized.
           </h2>
-          <p className="text-sm text-neutral-400 font-medium uppercase tracking-wider">
+          <p className="text-sm text-purple-200 font-medium uppercase tracking-wider">
             Tag transactions. Export for taxes. One app, all chains.
           </p>
           <div className="mt-4">
             <button 
               onClick={() => onNavigate('/app')}
-              className="bg-white hover:bg-neutral-100 text-primary font-black uppercase tracking-wider text-xs px-8 py-3.5 transition-all shadow-[4px_4px_0_0_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[2px_2px_0_0_rgba(255,255,255,1)] border-2 border-white"
+              className="bg-white hover:bg-purple-50 text-accent font-black uppercase tracking-wider text-xs px-8 py-3.5 transition-all shadow-[4px_4px_0_0_rgba(18,18,18,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[2px_2px_0_0_rgba(18,18,18,1)] border-2 border-primary"
             >
               Open Gas Receipts →
             </button>
           </div>
-          <span className="text-[10px] text-neutral-500 font-black tracking-widest uppercase mt-4">
+          <span className="text-[10px] text-purple-300 font-black tracking-widest uppercase mt-4">
             Free. No email required.
           </span>
         </div>
