@@ -215,6 +215,7 @@ export function App() {
   const [manualNetwork, setManualNetwork] = useState<number>(143);
   const [resolvingHash, setResolvingHash] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+  const [isManualExpanded, setIsManualExpanded] = useState(false);
 
   // Multi-wallet input
   const [newWalletInput, setNewWalletInput] = useState('');
@@ -856,114 +857,129 @@ export function App() {
         <div className="flex-1 flex flex-col md:flex-row">
           <aside className="w-full md:w-[20%] border-r-0 md:border-r-2 border-b-2 md:border-b-0 border-primary bg-white p-6 flex flex-col justify-between gap-8">
             <div className="flex flex-col gap-6">
-              <div className="border-2 border-primary bg-secondary p-4 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-                <span className="text-label text-neutral-500 uppercase font-semibold block mb-1">
-                  Active Wallet
-                </span>
-                <span className="font-mono font-bold text-body break-all block">
-                  {demoMode 
-                    ? 'Demo Mode Active' 
-                    : address 
-                      ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` 
-                      : 'Not Connected'}
-                </span>
-                {!demoMode && address && (
-                  <a 
-                    href={`https://explorer.monad.xyz/address/${address}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-label text-accent font-semibold underline block mt-2 hover:text-accent-dark"
-                  >
-                    View on MonadScan
-                  </a>
-                )}
-              </div>
-
-              {!demoMode && (
-                <div className="border-2 border-primary bg-white p-4 shadow-[2px_2px_0_0_rgba(0,0,0,1)] flex flex-col gap-3">
-                  <span className="text-label text-neutral-500 uppercase font-semibold block">
-                    Track More Wallets
+              {/* ACTIVE WALLET */}
+              <div className="flex flex-col gap-1">
+                <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Active Wallet</span>
+                <div className="border-2 border-primary bg-secondary p-3 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+                  <span className="font-mono font-bold text-body break-all block">
+                    {demoMode 
+                      ? 'Demo Mode Active' 
+                      : address 
+                        ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` 
+                        : 'Not Connected'}
                   </span>
-                  
-                  {additionalWallets.length > 0 && (
-                    <div className="flex flex-col gap-2 mb-2">
-                      {additionalWallets.map(addr => (
-                        <div key={addr} className="flex justify-between items-center bg-neutral-100 p-2 border border-neutral-300">
-                          <span className="font-mono text-xs truncate mr-2" title={addr}>
-                            {addr.substring(0, 6)}...{addr.substring(addr.length - 4)}
-                          </span>
-                          <button 
-                            onClick={() => handleRemoveWallet(addr)}
-                            className="text-red-600 hover:text-red-800 font-bold px-2 py-0.5"
-                            title="Remove Wallet"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                  {!demoMode && address && (
+                    <div className="flex justify-between items-center mt-2">
+                      <a 
+                        href={`https://explorer.monad.xyz/address/${address}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-label text-accent font-semibold underline hover:text-accent-dark"
+                      >
+                        View on MonadScan
+                      </a>
+                      <button 
+                        onClick={() => fetchTxHistory([address, ...additionalWallets])}
+                        className="text-[10px] font-bold uppercase text-primary border border-primary px-1.5 py-0.5 hover:bg-neutral-200 transition-colors bg-white shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                        title="Refresh Transactions"
+                      >
+                        🔄 Refresh
+                      </button>
                     </div>
                   )}
+                </div>
+              </div>
 
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      placeholder="0x..." 
-                      value={newWalletInput}
-                      onChange={(e) => setNewWalletInput(e.target.value)}
-                      className="w-full border-2 border-primary p-1 font-mono text-xs focus:outline-none focus:border-accent"
-                    />
-                    <button 
-                      onClick={handleAddWallet}
-                      className="bg-primary text-white px-2 py-1 font-bold text-xs hover:bg-neutral-800 transition-colors"
-                    >
-                      Add
-                    </button>
+              {/* TRACKED WALLETS */}
+              {!demoMode && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Tracked Wallets</span>
+                  <div className="border-2 border-primary bg-white p-3 shadow-[2px_2px_0_0_rgba(0,0,0,1)] flex flex-col gap-2">
+                    {address && (
+                       <div className="flex justify-between items-center bg-neutral-100 p-1.5 border border-neutral-300">
+                         <span className="font-mono text-[10px] truncate">{address.substring(0,6)}...{address.substring(address.length-4)}</span>
+                         <span className="text-[10px] font-bold text-green-600">✓ active</span>
+                       </div>
+                    )}
+                    {additionalWallets.length > 0 && (
+                      <div className="flex flex-col gap-1.5">
+                        {additionalWallets.map(addr => (
+                          <div key={addr} className="flex justify-between items-center bg-white p-1.5 border border-neutral-300">
+                            <span className="font-mono text-[10px] truncate mr-2" title={addr}>
+                              {addr.substring(0, 6)}...{addr.substring(addr.length - 4)}
+                            </span>
+                            <button 
+                              onClick={() => handleRemoveWallet(addr)}
+                              className="text-red-600 hover:text-red-800 font-bold px-1"
+                              title="Remove Wallet"
+                            >×</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-1 mt-1">
+                      <input 
+                        type="text" 
+                        placeholder="0x..." 
+                        value={newWalletInput}
+                        onChange={(e) => setNewWalletInput(e.target.value)}
+                        className="w-full border-2 border-primary p-1 font-mono text-[10px] focus:outline-none focus:border-accent"
+                      />
+                      <button 
+                        onClick={handleAddWallet}
+                        className="bg-primary text-white px-2 py-1 font-bold text-[10px] hover:bg-neutral-800 transition-colors whitespace-nowrap"
+                      >+ Add</button>
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div className="border-2 border-primary bg-white p-4 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-                <span className="text-label text-neutral-500 uppercase font-semibold block mb-1">
-                  Tagged Transactions
-                </span>
-                <span className="text-header font-bold block">
-                  {totalTaggedCount} total
-                </span>
+              {/* STATS */}
+              <div className="flex flex-col gap-1">
+                <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Stats</span>
+                <div className="border-2 border-primary bg-white p-3 shadow-[2px_2px_0_0_rgba(0,0,0,1)] flex flex-col gap-1 text-sm font-medium">
+                  <div className="flex justify-between"><span className="text-neutral-500">Tagged:</span> <span className="font-bold">{totalTaggedCount}</span></div>
+                  <div className="flex justify-between"><span className="text-neutral-500">Pending:</span> <span className="font-bold">{Object.values(rowStates).filter(r => r.status === 'pending' || r.status === 'signing').length}</span></div>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={handleExportCSV}
-                  disabled={transactions.length === 0}
-                  className={`w-full text-center border-2 border-primary font-bold py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
-                    transactions.length === 0 
-                      ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none' 
-                      : 'bg-accent text-white hover:bg-accent-dark'
-                  }`}
-                >
-                  Export CSV
-                </button>
-
-                {demoMode && (
+              {/* ACTIONS */}
+              <div className="flex flex-col gap-1">
+                <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Actions</span>
+                <div className="flex flex-col gap-2">
                   <button
-                    onClick={() => {
-                      setDemoMode(false);
-                      setTransactions([]);
-                    }}
-                    className="w-full bg-white hover:bg-neutral-100 text-primary border-2 border-primary font-bold py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                    onClick={handleExportCSV}
+                    disabled={transactions.length === 0}
+                    className={`w-full text-left px-3 border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
+                      transactions.length === 0 
+                        ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none' 
+                        : 'bg-white hover:bg-neutral-50 text-primary'
+                    }`}
                   >
-                    Exit Demo Mode
+                    📥 Export CSV
                   </button>
-                )}
 
-                {!demoMode && isConnected && (
-                  <button
-                    onClick={() => disconnect()}
-                    className="w-full bg-white hover:bg-red-50 text-red-600 border-2 border-red-200 font-bold py-2 shadow-[2px_2px_0_0_rgba(220,38,38,0.2)] hover:border-red-600 transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
-                  >
-                    Disconnect
-                  </button>
-                )}
+                  {demoMode && (
+                    <button
+                      onClick={() => {
+                        setDemoMode(false);
+                        setTransactions([]);
+                      }}
+                      className="w-full text-left px-3 bg-white hover:bg-neutral-100 text-primary border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                    >
+                      🚪 Exit Demo Mode
+                    </button>
+                  )}
+
+                  {!demoMode && isConnected && (
+                    <button
+                      onClick={() => disconnect()}
+                      className="w-full text-left px-3 bg-white hover:bg-red-50 text-red-600 border-2 border-red-200 font-bold py-1.5 shadow-[2px_2px_0_0_rgba(220,38,38,0.2)] hover:border-red-600 transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                    >
+                      🔴 Disconnect
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -983,44 +999,54 @@ export function App() {
           </aside>
 
           <main className="flex-1 p-6 overflow-x-auto flex flex-col gap-6">
-            <div className="bg-white border-2 border-primary p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-              <h2 className="text-header font-black uppercase mb-2">Resolve Manual Transaction Fallback</h2>
-              <p className="text-body text-neutral-600 mb-4">
-                If the block explorer API is down or has not updated, enter a specific transaction hash and select its network below to fetch it directly from the RPC node and add it to your tagging ledger.
-              </p>
+            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex flex-col">
+              <button 
+                onClick={() => setIsManualExpanded(!isManualExpanded)}
+                className="w-full px-6 py-3 flex justify-between items-center text-header font-black uppercase hover:bg-neutral-50 transition-colors text-left"
+              >
+                <span>{isManualExpanded ? '▼' : '▶'} Manual Tx Fallback</span>
+              </button>
               
-              <form onSubmit={handleResolveHash} className="flex gap-2 w-full flex-col md:flex-row">
-                <select 
-                  value={manualNetwork}
-                  onChange={(e) => setManualNetwork(Number(e.target.value))}
-                  className="px-4 py-2 border-2 border-primary font-bold text-label bg-white shadow-[1px_1px_0_0_rgba(0,0,0,1)] md:w-32 focus:outline-none"
-                >
-                  <option value={143}>Monad</option>
-                  <option value={8453}>Base</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="0x..."
-                  value={manualHash}
-                  onChange={(e) => setManualHash(e.target.value)}
-                  className="flex-1 px-4 py-2 border-2 border-primary font-mono text-label bg-secondary focus:outline-none focus:bg-white transition-colors placeholder-neutral-400"
-                  disabled={resolvingHash}
-                />
-                <button
-                  type="submit"
-                  disabled={resolvingHash || manualHash.trim().length === 0}
-                  className={`border-2 border-primary font-bold px-6 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
-                    resolvingHash || manualHash.trim().length === 0
-                      ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-                      : 'bg-accent text-white hover:bg-accent-dark'
-                  }`}
-                >
-                  {resolvingHash ? 'Resolving...' : 'Resolve Tx Hash'}
-                </button>
-              </form>
-              {manualError && (
-                <div className="mt-3 text-label text-red-600 border border-red-200 bg-red-50 p-2 font-medium">
-                  {manualError}
+              {isManualExpanded && (
+                <div className="p-6 pt-0 border-t-2 border-primary bg-secondary">
+                  <p className="text-body text-neutral-600 mb-4 mt-4">
+                    If the block explorer API is down or has not updated, enter a specific transaction hash and select its network below to fetch it directly from the RPC node and add it to your tagging ledger.
+                  </p>
+                  
+                  <form onSubmit={handleResolveHash} className="flex gap-2 w-full flex-col md:flex-row">
+                    <select 
+                      value={manualNetwork}
+                      onChange={(e) => setManualNetwork(Number(e.target.value))}
+                      className="px-4 py-2 border-2 border-primary font-bold text-label bg-white shadow-[1px_1px_0_0_rgba(0,0,0,1)] md:w-32 focus:outline-none"
+                    >
+                      <option value={143}>Monad</option>
+                      <option value={8453}>Base</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="0x..."
+                      value={manualHash}
+                      onChange={(e) => setManualHash(e.target.value)}
+                      className="flex-1 px-4 py-2 border-2 border-primary font-mono text-label bg-white focus:outline-none focus:ring-2 focus:ring-accent transition-all placeholder-neutral-400"
+                      disabled={resolvingHash}
+                    />
+                    <button
+                      type="submit"
+                      disabled={resolvingHash || manualHash.trim().length === 0}
+                      className={`border-2 border-primary font-bold px-6 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
+                        resolvingHash || manualHash.trim().length === 0
+                          ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
+                          : 'bg-accent text-white hover:bg-accent-dark'
+                      }`}
+                    >
+                      {resolvingHash ? 'Resolving...' : 'Resolve Tx Hash'}
+                    </button>
+                  </form>
+                  {manualError && (
+                    <div className="mt-3 text-label text-red-600 border border-red-200 bg-red-50 p-2 font-medium">
+                      {manualError}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1046,7 +1072,7 @@ export function App() {
               <div className="flex-1 overflow-auto">
                 <table className="w-full text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b-2 border-primary bg-secondary text-label uppercase text-neutral-500 font-bold hidden md:table-row">
+                    <tr className="border-b-2 border-primary bg-secondary text-label uppercase text-neutral-500 font-bold hidden md:table-row sticky top-0 z-10 shadow-[0_2px_0_0_rgba(0,0,0,1)]">
                       <th className="px-4 py-3 border-r border-neutral-200 w-[140px]">Date</th>
                       <th className="px-4 py-3 border-r border-neutral-200 w-[120px]">Tx Hash</th>
                       <th className="px-4 py-3 border-r border-neutral-200 w-[100px]">Network</th>
@@ -1077,19 +1103,31 @@ export function App() {
                     ) : transactions.length === 0 ? (
                       // Empty state
                       <tr>
-                        <td colSpan={9} className="px-4 py-12 text-center text-neutral-400">
-                          <div className="max-w-xs mx-auto flex flex-col items-center gap-3">
-                            <div className="w-12 h-12 border-2 border-dashed border-neutral-300 flex items-center justify-center font-bold text-header">
-                              ?
-                            </div>
-                            <span className="font-semibold text-body">No transactions found</span>
-                            <span className="text-label mb-2">Use the manual input tool above, or load demo data.</span>
+                        <td colSpan={9} className="px-4 py-16">
+                          <div className="max-w-sm mx-auto border-2 border-primary p-8 bg-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-center flex flex-col gap-4">
+                            <div className="text-4xl">📄</div>
+                            <h3 className="font-bold text-header uppercase m-0">No transactions found</h3>
+                            
+                            <ConnectButton.Custom>
+                              {({ openConnectModal }) => (
+                                <button 
+                                  onClick={openConnectModal}
+                                  className="w-full bg-white text-primary border-2 border-primary font-bold px-4 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-neutral-100 transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                                >
+                                  Connect a wallet with history
+                                </button>
+                              )}
+                            </ConnectButton.Custom>
+                            
+                            <span className="text-label text-neutral-400 uppercase font-bold mt-2 mb-2">OR</span>
+                            
                             <button
                               onClick={() => setDemoMode(true)}
-                              className="bg-accent text-white border-2 border-primary px-4 py-2 font-bold text-sm shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-accent-dark transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                              className="w-full bg-accent text-white border-2 border-primary px-4 py-3 font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-accent-dark transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none flex items-center justify-center gap-2"
                             >
-                              Load Demo Data
+                              Load Demo Data <span className="text-lg leading-none">←</span>
                             </button>
+                            <span className="text-[10px] text-neutral-500 font-medium">New wallet? Fund it or use demo.</span>
                           </div>
                         </td>
                       </tr>
@@ -1301,7 +1339,7 @@ export function App() {
                                         : 'bg-accent text-white hover:bg-accent-dark'
                                     }`}
                                   >
-                                    Save
+                                    {rowState.status === 'failed' ? '✗ Failed - Retry?' : rowState.status === 'signing' || rowState.status === 'pending' ? '•••' : 'Save'}
                                   </button>
                                 ) : (
                                   <span className="text-label text-neutral-400 font-bold border border-transparent px-3 py-1">
@@ -1334,7 +1372,7 @@ export function App() {
                                         : 'bg-accent text-white hover:bg-accent-dark'
                                     }`}
                                   >
-                                    Save Transaction Tag
+                                    {rowState.status === 'failed' ? '✗ Failed - Retry?' : rowState.status === 'signing' || rowState.status === 'pending' ? '•••' : 'Save Transaction Tag'}
                                   </button>
                                 ) : (
                                   <div className="w-full text-center bg-neutral-100 border border-neutral-300 py-2 flex flex-col items-center">
