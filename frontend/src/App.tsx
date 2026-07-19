@@ -919,17 +919,13 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary text-primary selection:bg-accent selection:text-white flex flex-col">
-      <header className="border-b-2 border-primary bg-white px-6 py-4 flex justify-between items-center shadow-[0_2px_0_0_rgba(0,0,0,1)] z-10">
+    <div className="min-h-screen text-primary selection:bg-accent selection:text-white flex flex-col">
+      <header className="border-b-2 border-primary bg-white px-6 py-4 flex justify-between items-center shadow-[0_2px_0_0_rgba(18,18,18,1)] z-10">
         <div className="flex items-center gap-3">
           <Logo 
-            variant="boxed" 
-            className="cursor-pointer shadow-[1px_1px_0_0_rgba(0,0,0,1)] hover:bg-neutral-50 transition-colors"
+            className="cursor-pointer"
             onClick={() => navigate('/')}
           />
-          <span className="text-label text-neutral-500 uppercase tracking-widest hidden md:inline">
-            CROSS-CHAIN EXPENSE TRACKER
-          </span>
         </div>
         
         <div className="flex items-center gap-4">
@@ -967,7 +963,7 @@ export function App() {
               {/* ACTIVE WALLET */}
               <div className="flex flex-col gap-1">
                 <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Active Wallet</span>
-                <div className="border-2 border-primary bg-secondary p-3 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+                <div className="border-2 border-primary bg-white p-3">
                   <span className="font-mono font-bold text-body break-all block">
                     {demoMode 
                       ? 'Demo Mode Active' 
@@ -987,10 +983,11 @@ export function App() {
                       </a>
                       <button 
                         onClick={() => fetchTxHistory([address, ...additionalWallets])}
-                        className="text-[10px] font-bold uppercase text-primary border border-primary px-1.5 py-0.5 hover:bg-neutral-200 transition-colors bg-white shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                        className="text-[9px] font-bold uppercase text-primary border border-primary px-1.5 py-0.5 hover:bg-neutral-100 transition-colors bg-white shadow-[1px_1px_0_0_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none flex items-center gap-1"
                         title="Refresh Transactions"
                       >
-                        🔄 Refresh
+                        <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        Refresh
                       </button>
                     </div>
                   )}
@@ -1001,7 +998,7 @@ export function App() {
               {!demoMode && (
                 <div className="flex flex-col gap-1">
                   <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Tracked Wallets</span>
-                  <div className="border-2 border-primary bg-white p-3 shadow-[2px_2px_0_0_rgba(0,0,0,1)] flex flex-col gap-2">
+                  <div className="border-2 border-primary bg-white p-3 flex flex-col gap-2">
                     {address && (
                        <div className="flex justify-between items-center bg-neutral-100 p-1.5 border border-neutral-300">
                          <span className="font-mono text-[10px] truncate">{address.substring(0,6)}...{address.substring(address.length-4)}</span>
@@ -1009,20 +1006,20 @@ export function App() {
                        </div>
                     )}
                     {additionalWallets.length > 0 && (
-                      <div className="flex flex-col gap-1.5">
-                        {additionalWallets.map(addr => (
-                          <div key={addr} className="flex justify-between items-center bg-white p-1.5 border border-neutral-300">
-                            <span className="font-mono text-[10px] truncate mr-2" title={addr}>
-                              {addr.substring(0, 6)}...{addr.substring(addr.length - 4)}
-                            </span>
-                            <button 
-                              onClick={() => handleRemoveWallet(addr)}
-                              className="text-red-600 hover:text-red-800 font-bold px-1"
-                              title="Remove Wallet"
-                            >×</button>
-                          </div>
-                        ))}
-                      </div>
+                       <div className="flex flex-col gap-1.5">
+                         {additionalWallets.map(addr => (
+                           <div key={addr} className="flex justify-between items-center bg-white p-1.5 border border-neutral-300">
+                             <span className="font-mono text-[10px] truncate mr-2" title={addr}>
+                               {addr.substring(0, 6)}...{addr.substring(addr.length - 4)}
+                             </span>
+                             <button 
+                               onClick={() => handleRemoveWallet(addr)}
+                               className="text-red-600 hover:text-red-800 font-bold px-1"
+                               title="Remove Wallet"
+                             >×</button>
+                           </div>
+                         ))}
+                       </div>
                     )}
                     <div className="flex gap-1 mt-1">
                       <input 
@@ -1044,7 +1041,7 @@ export function App() {
               {/* STATS */}
               <div className="flex flex-col gap-1">
                 <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Stats</span>
-                <div className="border-2 border-primary bg-white p-3 shadow-[2px_2px_0_0_rgba(0,0,0,1)] flex flex-col gap-1 text-sm font-medium">
+                <div className="border-2 border-primary bg-white p-3 flex flex-col gap-1 text-sm font-medium">
                   <div className="flex justify-between"><span className="text-neutral-500">Tagged:</span> <span className="font-bold">{totalTaggedCount}</span></div>
                   <div className="flex justify-between"><span className="text-neutral-500">Pending:</span> <span className="font-bold">{Object.values(rowStates).filter(r => r.status === 'pending' || r.status === 'signing').length}</span></div>
                 </div>
@@ -1058,7 +1055,7 @@ export function App() {
                     <button
                       onClick={handleExportCSV}
                       disabled={transactions.length === 0 || exportState !== 'idle'}
-                      className={`w-full text-left px-3 border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
+                      className={`w-full px-3 border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(18,18,18,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none flex items-center justify-center gap-2 text-xs uppercase tracking-wider ${
                         transactions.length === 0 
                           ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none' 
                           : exportState === 'downloaded'
@@ -1068,11 +1065,12 @@ export function App() {
                               : 'bg-white hover:bg-neutral-50 text-primary'
                       }`}
                     >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                       {exportState === 'generating' 
-                        ? '⬇ Generating...' 
+                        ? 'Generating...' 
                         : exportState === 'downloaded' 
-                          ? '✓ Downloaded' 
-                          : '📥 Export CSV'}
+                          ? 'Downloaded' 
+                          : 'Export CSV'}
                     </button>
                     {downloadedFilename && (
                       <div className="absolute left-0 right-0 top-full mt-2 bg-white border-2 border-primary p-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-xs font-semibold font-mono text-neutral-700 download-toast z-20 break-all">
@@ -1087,18 +1085,19 @@ export function App() {
                         setDemoMode(false);
                         setTransactions([]);
                       }}
-                      className="w-full text-left px-3 bg-white hover:bg-neutral-100 text-primary border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                      className="w-full text-left px-3 bg-white hover:bg-neutral-100 text-primary border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(18,18,18,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none text-xs uppercase tracking-wider flex items-center justify-center gap-2"
                     >
-                      🚪 Exit Demo Mode
+                      Exit Demo Mode
                     </button>
                   )}
 
                   {!demoMode && isConnected && (
                     <button
                       onClick={() => disconnect()}
-                      className="w-full text-left px-3 bg-white hover:bg-red-50 text-red-600 border-2 border-red-200 font-bold py-1.5 shadow-[2px_2px_0_0_rgba(220,38,38,0.2)] hover:border-red-600 transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                      className="w-full px-3 bg-white hover:bg-neutral-50 text-[#121212] border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(18,18,18,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none text-xs uppercase tracking-wider flex items-center justify-center gap-2"
                     >
-                      🔴 Disconnect
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                      Disconnect
                     </button>
                   )}
                 </div>
@@ -1121,7 +1120,7 @@ export function App() {
           </aside>
 
           <main className="flex-1 p-6 overflow-x-auto flex flex-col gap-6">
-            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex flex-col">
+            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(18,18,18,1)] flex flex-col">
               <button 
                 onClick={() => setIsManualExpanded(!isManualExpanded)}
                 className="w-full px-6 py-3 flex justify-between items-center text-header font-black uppercase hover:bg-neutral-50 transition-colors text-left"
@@ -1132,7 +1131,7 @@ export function App() {
               </button>
               
               {isManualExpanded && (
-                <div className="p-6 pt-0 border-t-2 border-primary bg-secondary">
+                <div className="p-6 pt-0 border-t-2 border-primary bg-white">
                   <p className="text-body text-neutral-600 mb-4 mt-4">
                     If the block explorer API is down or has not updated, enter a specific transaction hash and select its network below to fetch it directly from the RPC node and add it to your tagging ledger.
                   </p>
@@ -1141,26 +1140,26 @@ export function App() {
                     <select 
                       value={manualNetwork}
                       onChange={(e) => setManualNetwork(Number(e.target.value))}
-                      className="px-4 py-2 border-2 border-primary font-bold text-label bg-white shadow-[1px_1px_0_0_rgba(0,0,0,1)] md:w-32 focus:outline-none"
+                      className="px-4 py-2 border-2 border-primary font-bold text-label bg-white shadow-[2px_2px_0px_0px_rgba(18,18,18,1)] md:w-32 focus:outline-none"
                     >
                       <option value={143}>Monad</option>
                       <option value={8453}>Base</option>
                     </select>
                     <input
                       type="text"
-                      placeholder="0x..."
+                      placeholder="ex...."
                       value={manualHash}
                       onChange={(e) => setManualHash(e.target.value)}
-                      className="flex-1 px-4 py-2 border-2 border-primary font-mono text-label bg-white focus:outline-none focus:ring-2 focus:ring-accent transition-all placeholder-neutral-400"
+                      className="flex-1 px-4 py-2 border-2 border-primary font-mono text-label bg-white shadow-[2px_2px_0px_0px_rgba(18,18,18,1)] focus:outline-none focus:ring-2 focus:ring-accent transition-all placeholder-neutral-400"
                       disabled={resolvingHash}
                     />
                     <button
                       type="submit"
                       disabled={resolvingHash || manualHash.trim().length === 0}
-                      className={`border-2 border-primary font-bold px-6 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
+                      className={`border-2 border-primary font-black uppercase text-xs tracking-wider px-6 py-2 shadow-[2px_2px_0px_0px_rgba(18,18,18,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
                         resolvingHash || manualHash.trim().length === 0
-                          ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
-                          : 'bg-accent text-white hover:bg-accent-dark'
+                          ? 'bg-white text-neutral-300 border-neutral-200 cursor-not-allowed shadow-none'
+                          : 'bg-white hover:bg-neutral-50 text-primary'
                       }`}
                     >
                       {resolvingHash ? 'Resolving...' : 'Resolve Tx Hash'}
@@ -1178,12 +1177,12 @@ export function App() {
 
 
             {/* Transaction Ledger Table */}
-            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex-1 flex flex-col overflow-hidden">
-              <div className="bg-primary text-white px-4 py-3 flex justify-between items-center border-b-2 border-primary">
-                <span className="font-bold text-header uppercase tracking-wider">Transaction Expense Ledger</span>
+            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(18,18,18,1)] flex-1 flex flex-col overflow-hidden">
+              <div className="bg-white text-primary px-6 py-4 flex justify-between items-center border-b-2 border-primary">
+                <span className="font-black text-header uppercase tracking-wider">Transaction Expense Ledger</span>
                 {demoMode && (
-                  <span className="bg-amber-400 text-primary text-label font-bold px-2 py-0.5 border border-primary">
-                    DEMO SIMULATOR ACTIVE
+                  <span className="bg-white text-primary text-[10px] font-black px-2.5 py-1 border-2 border-primary shadow-[2px_2px_0_0_rgba(18,18,18,1)] uppercase tracking-wider">
+                    Demo Simulator Active
                   </span>
                 )}
               </div>

@@ -17,29 +17,29 @@ export function EmptyState({
   onRetry,
   address = '',
 }: EmptyStateProps) {
-  const truncatedAddress = address 
-    ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
-    : '';
+
+
+  const btnClass = "w-full max-w-[280px] px-6 py-2.5 bg-white text-primary text-xs font-black uppercase tracking-wider border-2 border-primary shadow-[3px_3px_0px_0px_rgba(18,18,18,1)] hover:bg-neutral-50 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(18,18,18,1)] transition-all text-center";
 
   // NOT CONNECTED
   if (!isWalletConnected) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-8 border border-neutral-200 bg-white">
+      <div className="flex flex-col items-center justify-center py-16 px-8 border-2 border-primary bg-white shadow-[4px_4px_0_0_rgba(18,18,18,1)] max-w-lg mx-auto">
         <svg className="w-12 h-12 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="3" y="3" width="18" height="18" rx="0"/>
           <path d="M3 9h18"/>
           <path d="M9 21V9"/>
         </svg>
-        <h3 className="text-lg font-bold uppercase tracking-tight text-neutral-900 mb-2">No wallet connected</h3>
-        <p className="text-sm text-neutral-500 mb-6 text-center max-w-sm">
+        <h3 className="text-sm font-black uppercase tracking-widest text-primary mb-2">No wallet connected</h3>
+        <p className="text-xs text-neutral-500 mb-6 text-center max-w-sm">
           Connect your wallet to view and tag your onchain transactions.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center">
           <ConnectButton.Custom>
             {({ openConnectModal }) => (
               <button 
                 onClick={openConnectModal}
-                className="px-6 py-2.5 bg-accent text-white text-sm font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+                className={btnClass}
               >
                 Connect Wallet
               </button>
@@ -47,7 +47,7 @@ export function EmptyState({
           </ConnectButton.Custom>
           <button 
             onClick={onLoadDemo}
-            className="px-6 py-2.5 bg-white text-neutral-900 text-sm font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+            className={btnClass}
           >
             Load Demo Data
           </button>
@@ -59,38 +59,38 @@ export function EmptyState({
   // CONNECTED + API ERROR
   if (loadError) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-8 border border-neutral-200 bg-white">
-        <svg className="w-12 h-12 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <div className="flex flex-col items-center justify-center py-16 px-8 border-2 border-primary bg-white shadow-[4px_4px_0_0_rgba(18,18,18,1)] max-w-lg mx-auto">
+        <svg className="w-10 h-10 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="12" cy="12" r="10"/>
           <path d="M12 8v4"/>
           <path d="M12 16h.01"/>
         </svg>
-        <h3 className="text-lg font-bold uppercase tracking-tight text-neutral-900 mb-2">Couldn't load transactions</h3>
-        <p className="text-sm text-neutral-500 mb-2 text-center max-w-sm">
+        <h3 className="text-base font-black uppercase tracking-widest text-primary mb-2">Couldn't load transactions</h3>
+        <p className="text-xs text-neutral-500 mb-2 text-center max-w-sm leading-relaxed">
           The block explorer API may be down or rate-limited.
         </p>
-        <p className="text-xs text-neutral-400 mb-6 text-center">
-          Wallet: <span className="font-mono text-neutral-600">{truncatedAddress}</span>
+        <p className="text-[10px] text-neutral-400 mb-6 text-center uppercase tracking-wider font-bold">
+          Wallet: <span className="font-mono text-neutral-600 select-all">{address}</span>
         </p>
-        <div className="flex flex-col gap-3 w-full max-w-xs">
+        <div className="flex flex-col gap-3 w-full items-center">
           <button 
             onClick={onOpenManualFallback}
-            className="w-full px-6 py-2.5 bg-accent text-white text-sm font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none flex items-center justify-center gap-2"
+            className={btnClass}
           >
-            <span>▼</span> Use Manual Fallback
+            ▼ Use Manual Fallback
           </button>
           <button 
             onClick={onRetry}
-            className="w-full px-6 py-2.5 bg-white text-neutral-900 text-sm font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none"
+            className={btnClass}
           >
             ↻ Retry Loading
           </button>
-          <div className="text-center">
-            <span className="text-xs text-neutral-400 font-bold uppercase">or</span>
+          <div className="text-center py-1">
+            <span className="text-[10px] text-neutral-400 font-black uppercase tracking-widest">or</span>
           </div>
           <button 
             onClick={onLoadDemo}
-            className="w-full px-6 py-2.5 bg-white text-neutral-600 text-sm font-bold border border-neutral-200 hover:border-neutral-400 transition-all"
+            className={btnClass}
           >
             Load Demo Data
           </button>
@@ -101,35 +101,35 @@ export function EmptyState({
 
   // CONNECTED + 0 TRANSACTIONS (API success, empty result)
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-8 border border-neutral-200 bg-white">
+    <div className="flex flex-col items-center justify-center py-16 px-8 border-2 border-primary bg-white shadow-[4px_4px_0_0_rgba(18,18,18,1)] max-w-lg mx-auto">
       <svg className="w-12 h-12 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="3" y="3" width="18" height="18" rx="0"/>
         <path d="M9 12h6"/>
       </svg>
-      <h3 className="text-lg font-bold uppercase tracking-tight text-neutral-900 mb-2">No transactions found</h3>
-      <p className="text-sm text-neutral-500 mb-2 text-center max-w-sm">
+      <h3 className="text-sm font-black uppercase tracking-widest text-primary mb-2">No transactions found</h3>
+      <p className="text-xs text-neutral-500 mb-2 text-center max-w-sm">
         This wallet has no visible transaction history on the selected chain.
       </p>
-      <p className="text-xs text-neutral-400 mb-6 text-center">
-        Wallet: <span className="font-mono text-neutral-600">{truncatedAddress}</span>
+      <p className="text-[10px] text-neutral-400 mb-6 text-center uppercase tracking-wider font-bold">
+        Wallet: <span className="font-mono text-neutral-600 select-all">{address}</span>
       </p>
-      <div className="flex flex-col gap-3 w-full max-w-xs">
+      <div className="flex flex-col gap-3 w-full items-center">
         <button 
           onClick={onOpenManualFallback}
-          className="w-full px-6 py-2.5 bg-accent text-white text-sm font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none flex items-center justify-center gap-2"
+          className={btnClass}
         >
-          <span>▼</span> Use Manual Fallback
+          ▼ Use Manual Fallback
         </button>
-        <div className="text-center">
-          <span className="text-xs text-neutral-400 font-bold uppercase">or</span>
+        <div className="text-center py-1">
+          <span className="text-[10px] text-neutral-400 font-black uppercase tracking-widest">or</span>
         </div>
         <button 
           onClick={onLoadDemo}
-          className="w-full px-6 py-2.5 bg-white text-neutral-600 text-sm font-bold border border-neutral-200 hover:border-neutral-400 transition-all"
+          className={btnClass}
         >
           Load Demo Data
         </button>
-        <p className="text-xs text-neutral-400 text-center mt-2 font-medium">
+        <p className="text-[10px] text-neutral-400 text-center mt-2 font-black uppercase tracking-wider">
           New wallet? Fund it or use demo.
         </p>
       </div>
