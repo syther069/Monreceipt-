@@ -1,19 +1,36 @@
 # MonTally
 
-MonTally is a utilitarian, cross-chain expense tagger. It fetches your onchain transactions from Ethereum, Base, and Monad, allows you to categorize and add notes to them, and saves those metadata tags **directly onchain** using Monad as a high-speed, ultra-cheap data availability layer.
+**Cross-Chain Expense Tracker & Onchain Metadata Tagger**
 
-You can organize your accounting ledger and export clean, tax-ready CSV files in seconds.
+MonTally fetches onchain transactions from Ethereum, Base, and Monad, enables instant categorization and custom accounting notes, and writes those metadata tags **directly onchain** using Monad as an ultra-cheap, high-speed storage layer.
 
-- **Vercel Frontend:** [https://gas-receipts.vercel.app](https://gas-receipts.vercel.app)
-- **TagRegistry Contract (Monad Testnet):** `0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3`
+[![Live Application](https://img.shields.io/badge/Live_App-montally--io.vercel.app-4F1990?style=for-the-badge&logo=vercel)](https://montally-io.vercel.app)
+[![Monad Contract](https://img.shields.io/badge/Monad_Testnet-0xCA79...38C3-121212?style=for-the-badge&logo=solidity)](https://explorer.monad.xyz/address/0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3)
+[![X Profile](https://img.shields.io/badge/X_Profile-@SYther069-000000?style=for-the-badge&logo=x)](https://x.com/SYther069)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-MonTally-181717?style=for-the-badge&logo=github)](https://github.com/syther069/MonTally)
 
 ---
 
-## Why Built? (The Problem & Value Prop)
+## Visual Previews
 
-* **The Problem:** During tax season, accounting is a nightmare. Wallet histories (Etherscan, BaseScan) show addresses and values, but they have zero context. If you want to categorize transactions for your accountant, you are forced to copy hashes into private spreadsheets, take screenshots, or write manual notes that eventually get lost.
-* **The Gas Dilemma:** Storing expense tags on Ethereum or Base costs too much ($1 to $5 in gas fees per transaction tag). No one is going to pay L1/L2 gas just to write a note like *"Tax writeoff - SaaS subscription"*.
-* **The Solution:** MonTally uses **Monad** as a unified metadata storage registry. Because Monad fees are sub-penny (less than `$0.001` per write), you can store permanent, censorship-resistant notes onchain for your entire multichain activity at virtually zero cost. 
+### Landing Page (Swiss Onchain Minimal Theme)
+![MonTally Landing Page](./docs/images/landing-preview.png)
+
+### Transaction Expense Ledger & Onchain Tagging
+![MonTally Expense Tagger](./docs/images/ledger-preview.png)
+
+---
+
+## Why Built? (Problem & Solution)
+
+### The Problem
+During tax season, onchain accounting is broken. Block explorers (Etherscan, BaseScan, MonadScan) show raw addresses and values, but provide zero contextual intent. Accountants cannot determine whether a transfer was a token swap, a business expense, an investment, or a personal reimbursement. Users are forced to copy hashes into private spreadsheets, take screenshots, or write manual notes that eventually get lost.
+
+### The Gas Dilemma
+Storing expense metadata directly on Ethereum L1 or standard L2s costs **$1.00 to $5.00** per transaction write due to gas volatility. No user will pay L1/L2 gas fees just to store bookkeeping notes.
+
+### The Solution
+MonTally uses **Monad** as a unified metadata storage registry. Because Monad fees are sub-penny (less than `$0.001` per write), users can store permanent, censorship-resistant notes onchain for their entire multichain activity at virtually zero cost.
 
 ---
 
@@ -28,7 +45,7 @@ You can organize your accounting ledger and export clean, tax-ready CSV files in
             |                             |
             v                             v
   +------------------+          +------------------+
-  |  Etherscan/Base  |          |  Monad contract  |
+  |  Etherscan/Base  |          |  Monad Contract  |
   |  API History     |          |  (TagRegistry)   |
   |                  |          |                  |
   | Fetch tx lists   |          | Store/Read tags  |
@@ -36,16 +53,16 @@ You can organize your accounting ledger and export clean, tax-ready CSV files in
   +------------------+          +------------------+
 ```
 
-1. **Transaction Retrieval:** The frontend queries public Block Explorer APIs (BaseScan, MonadScan) to pull your raw transaction histories into a single ledger.
-2. **RPC Fallback:** If the Explorer APIs prune old transactions, MonReceipt falls back to querying the JSON-RPC nodes directly.
-3. **Onchain Tag Storage:** When you save a tag, it calls the `TagRegistry` contract on Monad. The contract stores the original transaction hash, the chain ID, the category (e.g. *swap*, *business_expense*), and a custom note.
-4. **CSV Export:** The frontend merges the raw transaction history with your onchain tags and compiles a clean, standardized CSV ledger.
+1. **Transaction Retrieval:** The frontend queries Block Explorer APIs (BaseScan, MonadScan) to aggregate raw multichain transaction histories into a single ledger.
+2. **RPC Fallback:** If explorer APIs prune or lag on new transactions, MonTally queries JSON-RPC nodes directly to resolve raw transaction hashes.
+3. **Onchain Tag Storage:** When a user saves a tag, it calls `addTag` or `updateTag` on the `TagRegistry` contract on Monad. The contract records the original transaction hash, chain ID, category, note, and timestamp.
+4. **CSV Export:** The frontend merges raw transaction data with onchain tags and exports a clean, accountant-ready CSV spreadsheet.
 
 ---
 
-## Contract Implementation (`TagRegistry.sol`)
+## Smart Contract (`TagRegistry.sol`)
 
-The smart contract is written in Solidity and deployed on Monad. It maps transaction hashes to custom tags:
+Deploys on Monad to store user-indexed transaction metadata permanently onchain:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -112,63 +129,64 @@ contract TagRegistry {
 }
 ```
 
+- **Deployed Contract Address (Monad Testnet):** `0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3`
+
 ---
 
-## Local Setup
+## Core Features & Workflow
 
-### 1. Smart Contract Development (`/contracts`)
+- **Manual Fallback Accordion (`▶ Manual Tx Fallback`):** If an explorer API lags on a brand-new transaction hash, paste the hash directly into the collapsible manual fallback input to fetch it straight from the JSON-RPC node.
+- **Tagged Transactions View & Category Filtering:** Instantly isolate tagged expenses or filter by category (`Investment`, `Income`, `Business Expense`, `Personal Expense`, `Donation`, `Swap`). Edit any existing tag in-place and re-submit to Monad.
+- **Accurate Wallet Identifiers:** Active wallet addresses render with a high-contrast **You** badge and display copy/explorer actions on hover.
+- **Accountant CSV Export:** Download structured spreadsheets merging raw transaction metrics with custom onchain tags in a single click.
 
-Requires Hardhat and Node.js.
+---
+
+## Setup & Local Development
+
+### 1. Smart Contracts (`/contracts`)
+Requires Node.js and Hardhat.
 
 ```bash
 cd contracts
 npm install
+
+# Create environment file
+echo 'MAINNET_PRIVATE_KEY="0x_your_private_key_here"' > .env
+
+# Compile contracts
+npx hardhat compile
+
+# Deploy to Monad
+npx hardhat run scripts/deploy.ts --network monadMainnet
 ```
 
-* **Configure Environment:** Create a `.env` file inside `/contracts` and specify your private key:
-  ```env
-  MAINNET_PRIVATE_KEY="0x_your_private_key_here"
-  ```
-* **Compile Contracts:**
-  ```bash
-  npx hardhat compile
-  ```
-* **Deploy to Monad:**
-  ```bash
-  npx hardhat run scripts/deploy.ts --network monadMainnet
-  ```
-
----
-
 ### 2. Frontend Application (`/frontend`)
-
 Requires Node.js (v18+) and npm.
 
 ```bash
 cd frontend
 npm install
+
+# Create environment file
+echo 'VITE_CONTRACT_ADDRESS="0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3"' > .env
+
+# Run development server
+npm run dev
 ```
 
-* **Configure Environment:** Create a `.env` file inside `/frontend`:
-  ```env
-  VITE_CONTRACT_ADDRESS="0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3"
-  ```
-* **Run in Development:**
-  ```bash
-  npm run dev
-  ```
-  Open `http://localhost:5173` in your browser.
-* **Build Production Bundle:**
-  ```bash
-  npm run build
-  ```
+Open `http://localhost:5173` in your browser.
 
 ---
 
-## User Interface & Features
+## Links & Community
 
-* **Manual Fallback Accordion:** If block explorer APIs fail to record a brand-new transaction hash, you can paste the hash directly into the collapsible `[▶ Manual Tx Fallback]` input to fetch it straight from the JSON-RPC node.
-* **Smart Row Indicators:** Green arrows (`←`) show incoming funds, black arrows (`→`) show outgoing, and gray double-arrows (`↔`) represent self-sends or contract creation.
-* **Staggered Animations:** Row entries animate dynamically on load within 150ms.
-* **Interactive Dropdowns:** Category selection staggers item entries with 15ms delay cascades.
-* **Accurate Wallet Identification:** The address column replaces your active address with a bold **"You"** indicator, and reveals copy/explorer options on hover.
+- **Live Application:** [montally-io.vercel.app](https://montally-io.vercel.app)
+- **X (Twitter):** [@SYther069](https://x.com/SYther069)
+- **GitHub Repository:** [syther069/MonTally](https://github.com/syther069/MonTally)
+- **Monad Contract:** [`0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3`](https://explorer.monad.xyz/address/0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3)
+
+---
+
+## License
+MIT License
