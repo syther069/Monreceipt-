@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount, useDisconnect, useReadContract, useWriteContract, usePublicClient } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { parseEther, formatEther, createPublicClient, http } from 'viem';
+import { mainnet, base, polygon } from 'viem/chains';
 import { tagRegistryAbi } from './abi';
 import type { Transaction, Tag, RowState } from './types';
 
@@ -497,39 +498,92 @@ export function App() {
         setTransactions((prev) => [mockTx, ...prev]);
         setManualHash('');
       } else {
-        const getRpcUrl = (chainId: number) => {
+        const getChain = (chainId: number) => {
           switch (chainId) {
-            case 1: return 'https://cloudflare-eth.com';
-            case 8453: return 'https://mainnet.base.org';
-            case 137: return 'https://polygon.llamarpc.com';
-            case 143: return 'https://rpc.monad.xyz';
-            default: return 'https://rpc.monad.xyz';
+            case 1: return mainnet;
+            case 8453: return base;
+            case 137: return polygon;
+            case 143: return {
+              id: 143,
+              name: 'Monad Mainnet',
+              nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
+              rpcUrls: { default: { http: ['https://rpc.monad.xyz'] } }
+            };
+            default: return mainnet;
           }
         };
 
-        const client = createPublicClient({ transport: http(getRpcUrl(manualNetwork)) });
-        const tx = await client.getTransaction({ hash: cleanHash as `0x${string}` });
-        
-        let detectedType: 'Transfer' | 'Token Transfer' | 'Contract Call' = 'Contract Call';
-        if (!tx.input || tx.input === '0x') {
-          detectedType = 'Transfer';
-        } else if (tx.input.startsWith('0xa9059cbb')) {
-          detectedType = 'Token Transfer';
-        }
+        let resolvedTx: Transaction;
+        const client = createPublicClient({ chain: getChain(manualNetwork), transport: http() });
 
-        const resolvedTx: Transaction = {
-          hash: tx.hash.toLowerCase(),
-          timeStamp: Math.floor(Date.now() / 1000).toString(), // Fallback to current timestamp
-          from: tx.from,
-          to: tx.to || '0x0000000000000000000000000000000000000000',
-          value: tx.value.toString(),
-          input: tx.input,
-          blockNumber: tx.blockNumber?.toString() || 'Pending',
-          detectedType,
-          isManual: true,
-          chainId: manualNetwork,
-          isError: '0'
-        };
+        try {
+          const tx = await client.getTransaction({ hash: cleanHash as `0x${string}` });
+          
+          let detectedType: 'Transfer' | 'Token Transfer' | 'Contract Call' = 'Contract Call';
+          if (!tx.input || tx.input === '0x') {
+            detectedType = 'Transfer';
+          } else if (tx.input.startsWith('0xa9059cbb')) {
+            detectedType = 'Token Transfer';
+          }
+
+          resolvedTx = {
+            hash: tx.hash.toLowerCase(),
+            timeStamp: Math.floor(Date.now() / 1000).toString(),
+            from: tx.from,
+            to: tx.to || '0x0000000000000000000000000000000000000000',
+            value: tx.value.toString(),
+            input: tx.input,
+            blockNumber: tx.blockNumber?.toString() || 'Pending',
+            detectedType,
+            isManual: true,
+            chainId: manualNetwork,
+            isError: '0'
+          };
+        } catch (rpcErr) {
+          console.warn('RPC node failed or pruned tx. Falling back to Block Explorer API...', rpcErr);
+          
+          const getExplorerApi = (chainId: number) => {
+            switch (chainId) {
+              case 1: return `https://api.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`;
+              case 8453: return `https://api.basescan.org/api?`;
+              case 137: return `https://api.polygonscan.com/api?`;
+              case 143: return `https://explorer.monad.xyz/api?`;
+              default: return '';
+            }
+          };
+
+          const baseUrl = getExplorerApi(manualNetwork);
+          if (!baseUrl) throw new Error('No fallback API available for this network');
+
+          const res = await fetch(`${baseUrl}&module=proxy&action=eth_getTransactionByHash&txhash=${cleanHash}`);
+          const data = await res.json();
+
+          if (!data.result || data.result === 'null' || typeof data.result !== 'object') {
+             throw new Error('Transaction not found on Block Explorer API either');
+          }
+
+          const tx = data.result;
+          let detectedType: 'Transfer' | 'Token Transfer' | 'Contract Call' = 'Contract Call';
+          if (!tx.input || tx.input === '0x') {
+            detectedType = 'Transfer';
+          } else if (tx.input.startsWith('0xa9059cbb')) {
+            detectedType = 'Token Transfer';
+          }
+
+          resolvedTx = {
+            hash: tx.hash.toLowerCase(),
+            timeStamp: Math.floor(Date.now() / 1000).toString(),
+            from: tx.from,
+            to: tx.to || '0x0000000000000000000000000000000000000000',
+            value: BigInt(tx.value).toString(),
+            input: tx.input,
+            blockNumber: BigInt(tx.blockNumber || 0).toString(),
+            detectedType,
+            isManual: true,
+            chainId: manualNetwork,
+            isError: '0'
+          };
+        }
 
         setTransactions((prev) => [resolvedTx, ...prev]);
         setManualHash('');
