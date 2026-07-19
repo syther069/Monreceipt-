@@ -43,18 +43,18 @@ export function DocsPage({ onNavigate }: DocsPageProps) {
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-12 flex flex-col gap-10">
         <div className="border-b-2 border-[#0D0D0D] pb-6 flex flex-col gap-2">
           <span className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF]">[DOCUMENTATION]</span>
-          <h1 className="text-4xl font-black uppercase tracking-tight text-[#0D0D0D]">MonReceipt Technical Docs</h1>
+          <h1 className="text-4xl font-black uppercase tracking-tight text-[#0D0D0D]">MonTally Technical Docs</h1>
           <p className="text-lg text-[#6B7280]">How transaction tracking, metadata registry, and low-cost onchain ledger works.</p>
         </div>
 
         {/* 1. WHY BUILT */}
         <section className="flex flex-col gap-4">
-          <h2 className="text-xl font-bold uppercase text-[#0D0D0D] border-b border-[#E5E7EB] pb-2">1. Why MonReceipt?</h2>
+          <h2 className="text-xl font-bold uppercase text-[#0D0D0D] border-b border-[#E5E7EB] pb-2">1. Why MonTally?</h2>
           <p className="text-sm leading-relaxed text-[#6B7280]">
             Tax compliance for onchain activities is broken. Explorer platforms show raw balances, but fail to capture the intent. Storing descriptions and classifications directly on Ethereum or Base can cost $1.00 to $5.00 per registry write due to gas volatility.
           </p>
           <p className="text-sm leading-relaxed text-[#6B7280]">
-            MonReceipt treats **Monad** as a high-speed, cheap metadata registry. You retrieve transaction history lists from any chain (Base, Monad) and tag them for less than <span className="font-bold text-[#0D0D0D]">$0.001</span> per transaction write, storing your accountant spreadsheets permanently onchain.
+            MonTally treats **Monad** as a high-speed, cheap metadata registry. You retrieve transaction history lists from any chain (Base, Monad) and tag them for less than <span className="font-bold text-[#0D0D0D]">$0.001</span> per transaction write, storing your accountant spreadsheets permanently onchain.
           </p>
         </section>
 

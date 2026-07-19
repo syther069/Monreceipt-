@@ -1,6 +1,6 @@
-# MonReceipt
+# MonTally
 
-MonReceipt is a utilitarian, cross-chain expense tagger. It fetches your onchain transactions from Ethereum, Base, and Monad, allows you to categorize and add notes to them, and saves those metadata tags **directly onchain** using Monad as a high-speed, ultra-cheap data availability layer.
+MonTally is a utilitarian, cross-chain expense tagger. It fetches your onchain transactions from Ethereum, Base, and Monad, allows you to categorize and add notes to them, and saves those metadata tags **directly onchain** using Monad as a high-speed, ultra-cheap data availability layer.
 
 You can organize your accounting ledger and export clean, tax-ready CSV files in seconds.
 
@@ -13,7 +13,7 @@ You can organize your accounting ledger and export clean, tax-ready CSV files in
 
 * **The Problem:** During tax season, accounting is a nightmare. Wallet histories (Etherscan, BaseScan) show addresses and values, but they have zero context. If you want to categorize transactions for your accountant, you are forced to copy hashes into private spreadsheets, take screenshots, or write manual notes that eventually get lost.
 * **The Gas Dilemma:** Storing expense tags on Ethereum or Base costs too much ($1 to $5 in gas fees per transaction tag). No one is going to pay L1/L2 gas just to write a note like *"Tax writeoff - SaaS subscription"*.
-* **The Solution:** MonReceipt uses **Monad** as a unified metadata storage registry. Because Monad fees are sub-penny (less than `$0.001` per write), you can store permanent, censorship-resistant notes onchain for your entire multichain activity at virtually zero cost. 
+* **The Solution:** MonTally uses **Monad** as a unified metadata storage registry. Because Monad fees are sub-penny (less than `$0.001` per write), you can store permanent, censorship-resistant notes onchain for your entire multichain activity at virtually zero cost. 
 
 ---
 
