@@ -230,6 +230,16 @@ export function App() {
   const [isManualExpanded, setIsManualExpanded] = useState(false);
   const [activeDropdownHash, setActiveDropdownHash] = useState<string | null>(null);
 
+  // Export CSV feedback states
+  const [exportState, setExportState] = useState<'idle' | 'generating' | 'downloaded'>('idle');
+  const [downloadedFilename, setDownloadedFilename] = useState<string | null>(null);
+
+  // Table scroll shadow state
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Set of newly tagged transaction hashes
+  const [newlyTaggedHashes, setNewlyTaggedHashes] = useState<Set<string>>(new Set());
+
   // Multi-wallet input
   const [newWalletInput, setNewWalletInput] = useState('');
 
@@ -651,6 +661,19 @@ export function App() {
         
         localStorage.setItem(cacheKey, JSON.stringify(localTags));
         
+        setNewlyTaggedHashes(prev => {
+          const next = new Set(prev);
+          next.add(hash.toLowerCase());
+          return next;
+        });
+        setTimeout(() => {
+          setNewlyTaggedHashes(prev => {
+            const next = new Set(prev);
+            next.delete(hash.toLowerCase());
+            return next;
+          });
+        }, 3000);
+
         setRowStates((prev) => ({
           ...prev,
           [hash]: { ...prev[hash], status: 'success' }
@@ -724,6 +747,19 @@ export function App() {
           localTags[hash] = newTag;
           localStorage.setItem(cacheKey, JSON.stringify(localTags));
 
+          setNewlyTaggedHashes(prev => {
+            const next = new Set(prev);
+            next.add(hash.toLowerCase());
+            return next;
+          });
+          setTimeout(() => {
+            setNewlyTaggedHashes(prev => {
+              const next = new Set(prev);
+              next.delete(hash.toLowerCase());
+              return next;
+            });
+          }, 3000);
+
           setRowStates((prev) => ({
             ...prev,
             [hash]: { ...prev[hash], status: 'success' }
@@ -760,7 +796,10 @@ export function App() {
   };
 
   // CSV Exporter
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
+    setExportState('generating');
+    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulating CSV building
+
     const headers = ['Date', 'Tx Hash', 'From', 'To', 'Value (MON)', 'Type', 'Category', 'Note'];
     
     const activeAddress = address ? address.toLowerCase() : 'demo';
@@ -801,10 +840,19 @@ export function App() {
     
     const dateFormatted = new Date().toISOString().substring(0, 10);
     const displayAddress = address ? address.substring(0, 8) : 'demo';
-    link.setAttribute("download", `gas-receipts-${displayAddress}-${dateFormatted}.csv`);
+    const filename = `gas-receipts-${displayAddress}-${dateFormatted}.csv`;
+    link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    setDownloadedFilename(filename);
+    setExportState('downloaded');
+
+    setTimeout(() => {
+      setExportState('idle');
+      setDownloadedFilename(null);
+    }, 3000);
   };
 
   const totalTaggedCount = useMemo(() => {
@@ -841,7 +889,8 @@ export function App() {
                   SYNC STALE · Click to refresh
                 </button>
               ) : (
-                <span className="text-label bg-green-100 text-green-800 border border-green-300 font-semibold px-2 py-0.5 shadow-[1px_1px_0_0_rgba(0,0,0,1)]">
+                <span className="sync-badge text-label bg-green-100 text-green-800 border border-green-300 font-semibold px-2 py-0.5 shadow-[1px_1px_0_0_rgba(0,0,0,1)]">
+                  <span className="sync-dot" />
                   ONCHAIN SYNC ACTIVE {lastSynced && `· Last synced ${now - lastSynced < 60000 ? '<1' : Math.floor((now - lastSynced) / 60000)} min ago`}
                 </span>
               )}
@@ -891,7 +940,7 @@ export function App() {
           </div>
         </main>
       ) : (
-        <div className="flex-1 flex flex-col md:flex-row">
+        <div className="flex-1 flex flex-col md:flex-row page-enter">
           <aside className="w-full md:w-[20%] border-r-0 md:border-r-2 border-b-2 md:border-b-0 border-primary bg-white p-6 flex flex-col justify-between gap-8">
             <div className="flex flex-col gap-6">
               {/* ACTIVE WALLET */}
@@ -984,17 +1033,32 @@ export function App() {
               <div className="flex flex-col gap-1">
                 <span className="text-label text-neutral-500 uppercase font-bold block ml-1">Actions</span>
                 <div className="flex flex-col gap-2">
-                  <button
-                    onClick={handleExportCSV}
-                    disabled={transactions.length === 0}
-                    className={`w-full text-left px-3 border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
-                      transactions.length === 0 
-                        ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none' 
-                        : 'bg-white hover:bg-neutral-50 text-primary'
-                    }`}
-                  >
-                    📥 Export CSV
-                  </button>
+                  <div className="relative w-full">
+                    <button
+                      onClick={handleExportCSV}
+                      disabled={transactions.length === 0 || exportState !== 'idle'}
+                      className={`w-full text-left px-3 border-2 border-primary font-bold py-1.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:translate-x-0.5 active:shadow-none ${
+                        transactions.length === 0 
+                          ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none' 
+                          : exportState === 'downloaded'
+                            ? 'bg-green-600 border-green-700 text-white'
+                            : exportState === 'generating'
+                              ? 'bg-neutral-100 text-neutral-400 border-neutral-300 cursor-not-allowed shadow-none'
+                              : 'bg-white hover:bg-neutral-50 text-primary'
+                      }`}
+                    >
+                      {exportState === 'generating' 
+                        ? '⬇ Generating...' 
+                        : exportState === 'downloaded' 
+                          ? '✓ Downloaded' 
+                          : '📥 Export CSV'}
+                    </button>
+                    {downloadedFilename && (
+                      <div className="absolute left-0 right-0 top-full mt-2 bg-white border-2 border-primary p-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-xs font-semibold font-mono text-neutral-700 download-toast z-20 break-all">
+                        {downloadedFilename}
+                      </div>
+                    )}
+                  </div>
 
                   {demoMode && (
                     <button
@@ -1106,10 +1170,10 @@ export function App() {
                 )}
               </div>
 
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 overflow-auto" onScroll={(e) => setIsScrolled(e.currentTarget.scrollTop > 0)}>
                 <table className="w-full text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b-2 border-primary bg-secondary text-label uppercase text-neutral-500 font-bold hidden md:table-row sticky top-0 z-10 shadow-[0_2px_0_0_rgba(0,0,0,1)]">
+                    <tr className={`border-b-2 border-primary bg-secondary text-label uppercase text-neutral-500 font-bold hidden md:table-row sticky top-0 z-10 table-header-sticky ${isScrolled ? 'scrolled' : ''}`}>
                       <th className="px-4 py-3 border-r border-neutral-200 w-[140px]">Date</th>
                       <th className="px-4 py-3 border-r border-neutral-200 w-[120px]">Tx Hash</th>
                       <th className="px-4 py-3 border-r border-neutral-200 w-[100px]">Network</th>
@@ -1121,7 +1185,7 @@ export function App() {
                       <th className="px-4 py-3 w-[160px]">Status & Action</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className={`table-body-fade ${loadingTxs ? 'switching' : 'loaded'}`}>
                     {loadingTxs ? (
                       // Skeleton Loading rows
                       Array.from({ length: 5 }).map((_, i) => (
@@ -1169,7 +1233,7 @@ export function App() {
                         </td>
                       </tr>
                     ) : (
-                      transactions.map((tx) => {
+                      transactions.map((tx, idx) => {
                         const hashLower = tx.hash.toLowerCase();
                         const rowState = rowStates[hashLower] || { category: '', note: '', status: 'idle' };
                         const originalTag = onchainTags[hashLower];
@@ -1239,11 +1303,13 @@ export function App() {
                         else if (tx.isManual) rowBg = 'bg-blue-50/40 hover:bg-blue-50/80';
                         else rowBg = 'bg-white hover:bg-neutral-50';
 
+                        const isNewlyTagged = newlyTaggedHashes.has(hashLower);
+
                         return (
                           <tr 
                             key={tx.hash} 
-                            className={`border-b border-neutral-200 transition-colors block md:table-row flex-col p-4 md:p-0 gap-2 md:gap-0 ${rowBg}`}
-                            style={{ display: 'flex' }}
+                            className={`table-row border-b border-neutral-200 transition-colors block md:table-row flex-col p-4 md:p-0 gap-2 md:gap-0 ${rowBg} ${isNewlyTagged ? 'row-newly-tagged' : ''}`}
+                            style={{ display: 'flex', animationDelay: `${Math.min(idx, 15) * 40}ms` }}
                           >
                             <style>{`
                               @media (min-width: 768px) {
