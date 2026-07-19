@@ -1,5 +1,7 @@
 
 
+import { Logo } from './Logo';
+
 interface DocsPageProps {
   onNavigate: (path: string) => void;
 }
@@ -10,12 +12,11 @@ export function DocsPage({ onNavigate }: DocsPageProps) {
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-[#E5E7EB] z-50 flex items-center justify-between px-6">
         <div className="flex items-center gap-3">
-          <span 
+          <Logo 
+            variant="boxed" 
+            className="cursor-pointer"
             onClick={() => onNavigate('/')}
-            className="font-bold tracking-tighter text-sm uppercase border-2 border-[#0D0D0D] px-2 py-0.5 bg-white cursor-pointer"
-          >
-            GAS RECEIPTS
-          </span>
+          />
           <span className="text-xs text-[#6B7280] uppercase tracking-wider font-semibold">
             DOCUMENTATION
           </span>

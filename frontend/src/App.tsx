@@ -7,6 +7,7 @@ import { tagRegistryAbi } from './abi';
 import type { Transaction, Tag, RowState } from './types';
 import { LandingPage } from './LandingPage';
 import { DocsPage } from './DocsPage';
+import { Logo } from './Logo';
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3') as `0x${string}`;
 
@@ -895,12 +896,11 @@ export function App() {
     <div className="min-h-screen bg-secondary text-primary selection:bg-accent selection:text-white flex flex-col">
       <header className="border-b-2 border-primary bg-white px-6 py-4 flex justify-between items-center shadow-[0_2px_0_0_rgba(0,0,0,1)] z-10">
         <div className="flex items-center gap-3">
-          <span 
+          <Logo 
+            variant="boxed" 
+            className="cursor-pointer shadow-[1px_1px_0_0_rgba(0,0,0,1)] hover:bg-neutral-50 transition-colors"
             onClick={() => navigate('/')}
-            className="font-bold tracking-tighter text-header uppercase border-2 border-primary px-2 py-0.5 bg-secondary shadow-[1px_1px_0_0_rgba(0,0,0,1)] cursor-pointer hover:bg-neutral-50 transition-colors"
-          >
-            Gas Receipts
-          </span>
+          />
           <span className="text-label text-neutral-500 uppercase tracking-widest hidden md:inline">
             CROSS-CHAIN EXPENSE TRACKER
           </span>
