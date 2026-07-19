@@ -1,71 +1,174 @@
-# MonReceipts
+# MonReceipt
 
-Your onchain transactions, organized. A clean, utilitarian dApp that acts as a unified ledger to fetch, track, and tag transactions across multiple networks (Ethereum, Base, Polygon, and Monad), powered by the Monad Mainnet for zero-cost, lightning-fast data availability.
+MonReceipt is a utilitarian, cross-chain expense tagger. It fetches your onchain transactions from Ethereum, Base, and Monad, allows you to categorize and add notes to them, and saves those metadata tags **directly onchain** using Monad as a high-speed, ultra-cheap data availability layer.
 
-## The Problem & Value Proposition
-> **Personal Story:** I was literally screenshotting Etherscan to match gas fees and contract interactions for my spreadsheet during tax season. Crypto is onchain, but tax compliance is stuck in the dark ages. I wanted to tag my Ethereum and Base transactions natively onchain, but gas is too expensive ($2-$5 per tag).
+You can organize your accounting ledger and export clean, tax-ready CSV files in seconds.
 
-### ARCHITECTURE: The Cross-Chain Data Availability Layer
-To solve the high cost of tagging transactions on L1 and L2s, **MonReceipts uses Monad as a high-speed, ultra-low-cost data availability layer for cross-chain activity!**
-
-- **Unified Fetching**: Transactions are fetched concurrently from native chain APIs (Ethereum, Base, Polygon, Monad) using Etherscan V2.
-- **Unified Tagging**: ALL tags (regardless of where the original transaction occurred) are stored **exclusively** on the Monad Mainnet smart contract.
-- **Why?** Ethereum gas = $2-5 per tag. Monad gas = < $0.001 per tag.
-- **Result**: Cross-chain expense tracking and organization at 1/1000th the cost, anchored immutably on a decentralized network. The UI explicitly maps your tag back to the correct chain via the `chainId` stored in the contract.
-
-## Live Information
-- **Live Demo (Vercel):** [https://gas-receipts.vercel.app](https://gas-receipts.vercel.app)
-- **TagRegistry Contract Address (Monad Mainnet):** `0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3`
-- **60-Second Demo Video:** [Link to Demo Video](https://youtube.com/shorts/placeholder-demo-video) (includes wallet connect, manual resolution, tagging, and CSV export)
+- **Vercel Frontend:** [https://gas-receipts.vercel.app](https://gas-receipts.vercel.app)
+- **TagRegistry Contract (Monad Testnet):** `0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3`
 
 ---
 
-## Screenshot
-![Gas Receipts Dashboard](c:/MonReceipts/frontend/src/assets/hero.png)
+## Why Built? (The Problem & Value Prop)
+
+* **The Problem:** During tax season, accounting is a nightmare. Wallet histories (Etherscan, BaseScan) show addresses and values, but they have zero context. If you want to categorize transactions for your accountant, you are forced to copy hashes into private spreadsheets, take screenshots, or write manual notes that eventually get lost.
+* **The Gas Dilemma:** Storing expense tags on Ethereum or Base costs too much ($1 to $5 in gas fees per transaction tag). No one is going to pay L1/L2 gas just to write a note like *"Tax writeoff - SaaS subscription"*.
+* **The Solution:** MonReceipt uses **Monad** as a unified metadata storage registry. Because Monad fees are sub-penny (less than `$0.001` per write), you can store permanent, censorship-resistant notes onchain for your entire multichain activity at virtually zero cost. 
 
 ---
 
-## How to Run Locally
+## System Architecture
 
-### 1. Prerequisites
-- Node.js (v18+)
-- npm or yarn
-- An Etherscan API Key (free from [etherscan.io](https://etherscan.io) to retrieve transaction lists via Etherscan V2 Multichain API)
-
-### 2. Clone the Repository
-```bash
-git clone <repository-url> gas-receipts
-cd gas-receipts
+```
+                 +-------------------+
+                 |   React Frontend  |
+                 +---------+---------+
+                           |
+            +--------------+--------------+
+            |                             |
+            v                             v
+  +------------------+          +------------------+
+  |  Etherscan/Base  |          |  Monad contract  |
+  |  API History     |          |  (TagRegistry)   |
+  |                  |          |                  |
+  | Fetch tx lists   |          | Store/Read tags  |
+  | (L1 / L2 history)|          | (Metadata tags)  |
+  +------------------+          +------------------+
 ```
 
-### 3. Setup and Deploy Contracts (Optional)
-If you wish to deploy your own registry contract:
+1. **Transaction Retrieval:** The frontend queries public Block Explorer APIs (BaseScan, MonadScan) to pull your raw transaction histories into a single ledger.
+2. **RPC Fallback:** If the Explorer APIs prune old transactions, MonReceipt falls back to querying the JSON-RPC nodes directly.
+3. **Onchain Tag Storage:** When you save a tag, it calls the `TagRegistry` contract on Monad. The contract stores the original transaction hash, the chain ID, the category (e.g. *swap*, *business_expense*), and a custom note.
+4. **CSV Export:** The frontend merges the raw transaction history with your onchain tags and compiles a clean, standardized CSV ledger.
+
+---
+
+## Contract Implementation (`TagRegistry.sol`)
+
+The smart contract is written in Solidity and deployed on Monad. It maps transaction hashes to custom tags:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract TagRegistry {
+    struct Tag {
+        string txHash;
+        uint256 chainId;
+        string category;
+        string note;
+        uint256 timestamp;
+        bool exists;
+    }
+
+    // Owner address mapping to their tagged transaction hashes
+    mapping(address => mapping(string => Tag)) private userTags;
+    // Track tagged transaction hashes list per user
+    mapping(address => string[]) private userTxHashes;
+
+    event TagAdded(address indexed user, string txHash, uint256 chainId, string category, string note);
+    event TagUpdated(address indexed user, string txHash, uint256 chainId, string category, string note);
+
+    function addTag(string calldata _txHash, uint256 _chainId, string calldata _category, string calldata _note) external {
+        require(!userTags[msg.sender][_txHash].exists, "Tag already exists");
+        
+        userTags[msg.sender][_txHash] = Tag({
+            txHash: _txHash,
+            chainId: _chainId,
+            category: _category,
+            note: _note,
+            timestamp: block.timestamp,
+            exists: true
+        });
+        
+        userTxHashes[msg.sender].push(_txHash);
+        emit TagAdded(msg.sender, _txHash, _chainId, _category, _note);
+    }
+
+    function updateTag(string calldata _txHash, uint256 _chainId, string calldata _category, string calldata _note) external {
+        require(userTags[msg.sender][_txHash].exists, "Tag does not exist");
+        
+        Tag storage tag = userTags[msg.sender][_txHash];
+        tag.category = _category;
+        tag.note = _note;
+        tag.timestamp = block.timestamp;
+        tag.chainId = _chainId;
+        
+        emit TagUpdated(msg.sender, _txHash, _chainId, _category, _note);
+    }
+
+    function getTag(address _user, string calldata _txHash) external view returns (Tag memory) {
+        return userTags[_user][_txHash];
+    }
+
+    function getUserTags(address _user) external view returns (Tag[] memory) {
+        string[] memory hashes = userTxHashes[_user];
+        Tag[] memory tags = new Tag[](hashes.length);
+        for (uint256 i = 0; i < hashes.length; i++) {
+            tags[i] = userTags[_user][hashes[i]];
+        }
+        return tags;
+    }
+}
+```
+
+---
+
+## Local Setup
+
+### 1. Smart Contract Development (`/contracts`)
+
+Requires Hardhat and Node.js.
+
 ```bash
 cd contracts
 npm install
 ```
-Create a `.env` file in the `contracts` folder:
-```env
-MAINNET_PRIVATE_KEY="your_private_key_here"
-```
-Deploy the contract:
-```bash
-npx hardhat run scripts/deploy.ts --network monadMainnet
-```
 
-### 4. Setup and Run Frontend
+* **Configure Environment:** Create a `.env` file inside `/contracts` and specify your private key:
+  ```env
+  MAINNET_PRIVATE_KEY="0x_your_private_key_here"
+  ```
+* **Compile Contracts:**
+  ```bash
+  npx hardhat compile
+  ```
+* **Deploy to Monad:**
+  ```bash
+  npx hardhat run scripts/deploy.ts --network monadMainnet
+  ```
+
+---
+
+### 2. Frontend Application (`/frontend`)
+
+Requires Node.js (v18+) and npm.
+
 ```bash
-cd ../frontend
+cd frontend
 npm install
 ```
-Create a `.env` file in the `frontend` folder:
-```env
-VITE_CONTRACT_ADDRESS="0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3"
-VITE_ETHERSCAN_API_KEY="your_etherscan_api_key_here"
-```
-Start the development server:
-```bash
-npm run dev
-```
-Open `http://localhost:5173` in your browser.
-# Monreceipt-
+
+* **Configure Environment:** Create a `.env` file inside `/frontend`:
+  ```env
+  VITE_CONTRACT_ADDRESS="0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3"
+  ```
+* **Run in Development:**
+  ```bash
+  npm run dev
+  ```
+  Open `http://localhost:5173` in your browser.
+* **Build Production Bundle:**
+  ```bash
+  npm run build
+  ```
+
+---
+
+## User Interface & Features
+
+* **Manual Fallback Accordion:** If block explorer APIs fail to record a brand-new transaction hash, you can paste the hash directly into the collapsible `[▶ Manual Tx Fallback]` input to fetch it straight from the JSON-RPC node.
+* **Smart Row Indicators:** Green arrows (`←`) show incoming funds, black arrows (`→`) show outgoing, and gray double-arrows (`↔`) represent self-sends or contract creation.
+* **Staggered Animations:** Row entries animate dynamically on load within 150ms.
+* **Interactive Dropdowns:** Category selection staggers item entries with 15ms delay cascades.
+* **Accurate Wallet Identification:** The address column replaces your active address with a bold **"You"** indicator, and reveals copy/explorer options on hover.
