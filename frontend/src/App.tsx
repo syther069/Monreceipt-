@@ -7,7 +7,6 @@ import { tagRegistryAbi } from './abi';
 import type { Transaction, Tag, RowState } from './types';
 
 const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || '0xCA79519f744dC0DAaCcAA88e85E8E85FfbE838C3') as `0x${string}`;
-const ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY || '';
 
 // Pre-defined categories
 const CATEGORIES = [
