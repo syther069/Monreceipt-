@@ -79,7 +79,8 @@ const MOCK_TRANSACTIONS: Transaction[] = [
     input: '0x',
     blockNumber: '124100',
     detectedType: 'Transfer',
-    chainId: 143
+    chainId: 143,
+    isError: '0'
   }
 ];
 
