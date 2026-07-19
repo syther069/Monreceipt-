@@ -1121,21 +1121,13 @@ export function App() {
           </aside>
 
           <main className="flex-1 p-6 overflow-x-auto flex flex-col gap-6">
-            <div 
-              ref={manualFallbackRef}
-              className={`bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex flex-col transition-all duration-150 ${txError ? 'bg-red-50/40 border-red-500 shadow-[4px_4px_0_0_rgba(239,68,68,1)]' : ''}`}
-            >
+            <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex flex-col">
               <button 
                 onClick={() => setIsManualExpanded(!isManualExpanded)}
                 className="w-full px-6 py-3 flex justify-between items-center text-header font-black uppercase hover:bg-neutral-50 transition-colors text-left"
               >
                 <span className="flex items-center gap-2">
                   <span>{isManualExpanded ? '▼' : '▶'} Manual Tx Fallback</span>
-                  {txError && (
-                    <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 border border-red-300 font-bold uppercase tracking-wider ml-2 animate-pulse">
-                      API FAILED — USE MANUAL ENTRY
-                    </span>
-                  )}
                 </span>
               </button>
               
@@ -1183,12 +1175,7 @@ export function App() {
               )}
             </div>
 
-            {/* Dashboard Warnings */}
-            {txError && (
-              <div className="bg-amber-50 border-2 border-amber-500 text-amber-900 p-4 font-semibold text-body">
-                ⚠️ API Fallback Active: {txError}
-              </div>
-            )}
+
 
             {/* Transaction Ledger Table */}
             <div className="bg-white border-2 border-primary shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex-1 flex flex-col overflow-hidden">

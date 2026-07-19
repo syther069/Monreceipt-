@@ -60,7 +60,7 @@ export function EmptyState({
   if (loadError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-8 border border-neutral-200 bg-white">
-        <svg className="w-12 h-12 text-red-400 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg className="w-12 h-12 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="12" cy="12" r="10"/>
           <path d="M12 8v4"/>
           <path d="M12 16h.01"/>
