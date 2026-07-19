@@ -1,0 +1,23 @@
+# Dependency directories
+node_modules/
+
+# Local env files
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+
+# Hardhat build artifacts
+artifacts/
+cache/
+typechain-types/
+
+# Frontend production build
+dist/
+
+# System / IDE files
+.vscode/
+.idea/
+.gemini/
+.DS_Store
