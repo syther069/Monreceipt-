@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount, useDisconnect, useReadContract, useWriteContract, usePublicClient } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { parseEther, formatEther, createPublicClient, http } from 'viem';
-import { mainnet, base, polygon } from 'viem/chains';
+import { base } from 'viem/chains';
 import { tagRegistryAbi } from './abi';
 import type { Transaction, Tag, RowState } from './types';
 
@@ -325,13 +325,11 @@ export function App() {
     setLoadingTxs(true);
     setTxError(null);
     try {
-      const supportedChains = [1, 8453, 137, 143]; // ETH, Base, Polygon, Monad
+      const supportedChains = [8453, 143]; // Base, Monad
       
       const getApiUrl = (chainId: number, addr: string) => {
         switch (chainId) {
-          case 1: return `https://api.etherscan.io/api?module=account&action=txlist&address=${addr}&startblock=0&endblock=99999999&sort=desc&apikey=${ETHERSCAN_API_KEY}`;
           case 8453: return `https://api.basescan.org/api?module=account&action=txlist&address=${addr}&startblock=0&endblock=99999999&sort=desc`;
-          case 137: return `https://api.polygonscan.com/api?module=account&action=txlist&address=${addr}&startblock=0&endblock=99999999&sort=desc`;
           case 143: return `https://explorer.monad.xyz/api?module=account&action=txlist&address=${addr}&startblock=0&endblock=99999999&sort=desc`;
           default: return '';
         }
@@ -500,16 +498,14 @@ export function App() {
       } else {
         const getChain = (chainId: number) => {
           switch (chainId) {
-            case 1: return mainnet;
             case 8453: return base;
-            case 137: return polygon;
             case 143: return {
               id: 143,
               name: 'Monad Mainnet',
               nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
               rpcUrls: { default: { http: ['https://rpc.monad.xyz'] } }
             };
-            default: return mainnet;
+            default: return base;
           }
         };
 
@@ -544,9 +540,7 @@ export function App() {
           
           const getExplorerApi = (chainId: number) => {
             switch (chainId) {
-              case 1: return `https://api.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`;
               case 8453: return `https://api.basescan.org/api?`;
-              case 137: return `https://api.polygonscan.com/api?`;
               case 143: return `https://explorer.monad.xyz/api?`;
               default: return '';
             }
@@ -992,9 +986,7 @@ export function App() {
                   className="px-4 py-2 border-2 border-primary font-bold text-label bg-white shadow-[1px_1px_0_0_rgba(0,0,0,1)] md:w-32 focus:outline-none"
                 >
                   <option value={143}>Monad</option>
-                  <option value={1}>ETH</option>
                   <option value={8453}>Base</option>
-                  <option value={137}>Polygon</option>
                 </select>
                 <input
                   type="text"
